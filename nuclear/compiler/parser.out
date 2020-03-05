@@ -1,0 +1,802 @@
+Created by PLY version 3.11 (http://www.dabeaz.com/ply)
+
+Grammar
+
+Rule 0     S' -> normal_el
+Rule 1     empty -> <empty>
+Rule 2     attrs -> attrs attr
+Rule 3     attrs -> attr
+Rule 4     attrs -> empty
+Rule 5     expr -> id
+Rule 6     assign_statement -> id ASSIGN expr
+Rule 7     statement -> assign_statement
+Rule 8     statement -> expr
+Rule 9     static_attr -> ID ASSIGN QUOTE_1 NUMBER QUOTE_1
+Rule 10    static_attr -> ID ASSIGN QUOTE_2 NUMBER QUOTE_2
+Rule 11    static_attr -> ID ASSIGN NORMSTRING
+Rule 12    exec_attr -> EXE_FLAG ID ASSIGN QUOTE_1 expr QUOTE_1
+Rule 13    exec_attr -> EXE_FLAG ID ASSIGN QUOTE_2 expr QUOTE_2
+Rule 14    event_attr -> EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1
+Rule 15    event_attr -> EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2
+Rule 16    attr -> static_attr
+Rule 17    attr -> exec_attr
+Rule 18    attr -> event_attr
+Rule 19    id -> id PUNCT ID
+Rule 20    id -> ID
+Rule 21    end_el -> BG_CLOSE_EL ID END_EL
+Rule 22    op_el -> BG_OPEN_EL ID attrs END_EL
+Rule 23    for_el -> BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL
+Rule 24    normal_el -> op_el els end_el
+Rule 25    els -> els el
+Rule 26    els -> el
+Rule 27    els -> empty
+Rule 28    el -> normal_el
+Rule 29    el -> for_el
+
+Terminals, with rules where they appear
+
+ASSIGN               : 6 9 10 11 12 13 14 15
+BG_CLOSE_EL          : 21 23
+BG_OPEN_EL           : 22 23
+END_EL               : 21 22 23 23
+EV_FLAG              : 14 15
+EXE_FLAG             : 12 13
+FOR                  : 23 23
+ID                   : 9 10 11 12 13 14 15 19 20 21 22 23
+IN                   : 23
+NORMSTRING           : 11
+NUMBER               : 9 10
+PUNCT                : 19
+QUOTE_1              : 9 9 12 12 14 14
+QUOTE_2              : 10 10 13 13 15 15
+error                : 
+
+Nonterminals, with rules where they appear
+
+assign_statement     : 7
+attr                 : 2 3
+attrs                : 2 22
+el                   : 25 26
+els                  : 23 24 25
+empty                : 4 27
+end_el               : 24
+event_attr           : 18
+exec_attr            : 17
+expr                 : 6 8 12 13
+for_el               : 29
+id                   : 5 6 19 23
+normal_el            : 28 0
+op_el                : 24
+statement            : 14 15
+static_attr          : 16
+
+Parsing method: LALR
+
+state 0
+
+    (0) S' -> . normal_el
+    (24) normal_el -> . op_el els end_el
+    (22) op_el -> . BG_OPEN_EL ID attrs END_EL
+
+    BG_OPEN_EL      shift and go to state 3
+
+    normal_el                      shift and go to state 1
+    op_el                          shift and go to state 2
+
+state 1
+
+    (0) S' -> normal_el .
+
+
+
+state 2
+
+    (24) normal_el -> op_el . els end_el
+    (25) els -> . els el
+    (26) els -> . el
+    (27) els -> . empty
+    (28) el -> . normal_el
+    (29) el -> . for_el
+    (1) empty -> .
+    (24) normal_el -> . op_el els end_el
+    (23) for_el -> . BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL
+    (22) op_el -> . BG_OPEN_EL ID attrs END_EL
+
+  ! shift/reduce conflict for BG_OPEN_EL resolved as shift
+    BG_CLOSE_EL     reduce using rule 1 (empty -> .)
+    BG_OPEN_EL      shift and go to state 9
+
+  ! BG_OPEN_EL      [ reduce using rule 1 (empty -> .) ]
+
+    op_el                          shift and go to state 2
+    els                            shift and go to state 4
+    el                             shift and go to state 5
+    empty                          shift and go to state 6
+    normal_el                      shift and go to state 7
+    for_el                         shift and go to state 8
+
+state 3
+
+    (22) op_el -> BG_OPEN_EL . ID attrs END_EL
+
+    ID              shift and go to state 10
+
+
+state 4
+
+    (24) normal_el -> op_el els . end_el
+    (25) els -> els . el
+    (21) end_el -> . BG_CLOSE_EL ID END_EL
+    (28) el -> . normal_el
+    (29) el -> . for_el
+    (24) normal_el -> . op_el els end_el
+    (23) for_el -> . BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL
+    (22) op_el -> . BG_OPEN_EL ID attrs END_EL
+
+    BG_CLOSE_EL     shift and go to state 13
+    BG_OPEN_EL      shift and go to state 9
+
+    op_el                          shift and go to state 2
+    end_el                         shift and go to state 11
+    el                             shift and go to state 12
+    normal_el                      shift and go to state 7
+    for_el                         shift and go to state 8
+
+state 5
+
+    (26) els -> el .
+
+    BG_CLOSE_EL     reduce using rule 26 (els -> el .)
+    BG_OPEN_EL      reduce using rule 26 (els -> el .)
+
+
+state 6
+
+    (27) els -> empty .
+
+    BG_CLOSE_EL     reduce using rule 27 (els -> empty .)
+    BG_OPEN_EL      reduce using rule 27 (els -> empty .)
+
+
+state 7
+
+    (28) el -> normal_el .
+
+    BG_CLOSE_EL     reduce using rule 28 (el -> normal_el .)
+    BG_OPEN_EL      reduce using rule 28 (el -> normal_el .)
+
+
+state 8
+
+    (29) el -> for_el .
+
+    BG_CLOSE_EL     reduce using rule 29 (el -> for_el .)
+    BG_OPEN_EL      reduce using rule 29 (el -> for_el .)
+
+
+state 9
+
+    (23) for_el -> BG_OPEN_EL . FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL
+    (22) op_el -> BG_OPEN_EL . ID attrs END_EL
+
+    FOR             shift and go to state 14
+    ID              shift and go to state 10
+
+
+state 10
+
+    (22) op_el -> BG_OPEN_EL ID . attrs END_EL
+    (2) attrs -> . attrs attr
+    (3) attrs -> . attr
+    (4) attrs -> . empty
+    (16) attr -> . static_attr
+    (17) attr -> . exec_attr
+    (18) attr -> . event_attr
+    (1) empty -> .
+    (9) static_attr -> . ID ASSIGN QUOTE_1 NUMBER QUOTE_1
+    (10) static_attr -> . ID ASSIGN QUOTE_2 NUMBER QUOTE_2
+    (11) static_attr -> . ID ASSIGN NORMSTRING
+    (12) exec_attr -> . EXE_FLAG ID ASSIGN QUOTE_1 expr QUOTE_1
+    (13) exec_attr -> . EXE_FLAG ID ASSIGN QUOTE_2 expr QUOTE_2
+    (14) event_attr -> . EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1
+    (15) event_attr -> . EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2
+
+  ! shift/reduce conflict for ID resolved as shift
+  ! shift/reduce conflict for EXE_FLAG resolved as shift
+  ! shift/reduce conflict for EV_FLAG resolved as shift
+    END_EL          reduce using rule 1 (empty -> .)
+    ID              shift and go to state 15
+    EXE_FLAG        shift and go to state 22
+    EV_FLAG         shift and go to state 23
+
+  ! ID              [ reduce using rule 1 (empty -> .) ]
+  ! EXE_FLAG        [ reduce using rule 1 (empty -> .) ]
+  ! EV_FLAG         [ reduce using rule 1 (empty -> .) ]
+
+    attrs                          shift and go to state 16
+    attr                           shift and go to state 17
+    empty                          shift and go to state 18
+    static_attr                    shift and go to state 19
+    exec_attr                      shift and go to state 20
+    event_attr                     shift and go to state 21
+
+state 11
+
+    (24) normal_el -> op_el els end_el .
+
+    $end            reduce using rule 24 (normal_el -> op_el els end_el .)
+    BG_CLOSE_EL     reduce using rule 24 (normal_el -> op_el els end_el .)
+    BG_OPEN_EL      reduce using rule 24 (normal_el -> op_el els end_el .)
+
+
+state 12
+
+    (25) els -> els el .
+
+    BG_CLOSE_EL     reduce using rule 25 (els -> els el .)
+    BG_OPEN_EL      reduce using rule 25 (els -> els el .)
+
+
+state 13
+
+    (21) end_el -> BG_CLOSE_EL . ID END_EL
+
+    ID              shift and go to state 24
+
+
+state 14
+
+    (23) for_el -> BG_OPEN_EL FOR . ID IN id END_EL els BG_CLOSE_EL FOR END_EL
+
+    ID              shift and go to state 25
+
+
+state 15
+
+    (9) static_attr -> ID . ASSIGN QUOTE_1 NUMBER QUOTE_1
+    (10) static_attr -> ID . ASSIGN QUOTE_2 NUMBER QUOTE_2
+    (11) static_attr -> ID . ASSIGN NORMSTRING
+
+    ASSIGN          shift and go to state 26
+
+
+state 16
+
+    (22) op_el -> BG_OPEN_EL ID attrs . END_EL
+    (2) attrs -> attrs . attr
+    (16) attr -> . static_attr
+    (17) attr -> . exec_attr
+    (18) attr -> . event_attr
+    (9) static_attr -> . ID ASSIGN QUOTE_1 NUMBER QUOTE_1
+    (10) static_attr -> . ID ASSIGN QUOTE_2 NUMBER QUOTE_2
+    (11) static_attr -> . ID ASSIGN NORMSTRING
+    (12) exec_attr -> . EXE_FLAG ID ASSIGN QUOTE_1 expr QUOTE_1
+    (13) exec_attr -> . EXE_FLAG ID ASSIGN QUOTE_2 expr QUOTE_2
+    (14) event_attr -> . EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1
+    (15) event_attr -> . EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2
+
+    END_EL          shift and go to state 27
+    ID              shift and go to state 15
+    EXE_FLAG        shift and go to state 22
+    EV_FLAG         shift and go to state 23
+
+    attr                           shift and go to state 28
+    static_attr                    shift and go to state 19
+    exec_attr                      shift and go to state 20
+    event_attr                     shift and go to state 21
+
+state 17
+
+    (3) attrs -> attr .
+
+    END_EL          reduce using rule 3 (attrs -> attr .)
+    ID              reduce using rule 3 (attrs -> attr .)
+    EXE_FLAG        reduce using rule 3 (attrs -> attr .)
+    EV_FLAG         reduce using rule 3 (attrs -> attr .)
+
+
+state 18
+
+    (4) attrs -> empty .
+
+    END_EL          reduce using rule 4 (attrs -> empty .)
+    ID              reduce using rule 4 (attrs -> empty .)
+    EXE_FLAG        reduce using rule 4 (attrs -> empty .)
+    EV_FLAG         reduce using rule 4 (attrs -> empty .)
+
+
+state 19
+
+    (16) attr -> static_attr .
+
+    END_EL          reduce using rule 16 (attr -> static_attr .)
+    ID              reduce using rule 16 (attr -> static_attr .)
+    EXE_FLAG        reduce using rule 16 (attr -> static_attr .)
+    EV_FLAG         reduce using rule 16 (attr -> static_attr .)
+
+
+state 20
+
+    (17) attr -> exec_attr .
+
+    END_EL          reduce using rule 17 (attr -> exec_attr .)
+    ID              reduce using rule 17 (attr -> exec_attr .)
+    EXE_FLAG        reduce using rule 17 (attr -> exec_attr .)
+    EV_FLAG         reduce using rule 17 (attr -> exec_attr .)
+
+
+state 21
+
+    (18) attr -> event_attr .
+
+    END_EL          reduce using rule 18 (attr -> event_attr .)
+    ID              reduce using rule 18 (attr -> event_attr .)
+    EXE_FLAG        reduce using rule 18 (attr -> event_attr .)
+    EV_FLAG         reduce using rule 18 (attr -> event_attr .)
+
+
+state 22
+
+    (12) exec_attr -> EXE_FLAG . ID ASSIGN QUOTE_1 expr QUOTE_1
+    (13) exec_attr -> EXE_FLAG . ID ASSIGN QUOTE_2 expr QUOTE_2
+
+    ID              shift and go to state 29
+
+
+state 23
+
+    (14) event_attr -> EV_FLAG . ID ASSIGN QUOTE_1 statement QUOTE_1
+    (15) event_attr -> EV_FLAG . ID ASSIGN QUOTE_2 statement QUOTE_2
+
+    ID              shift and go to state 30
+
+
+state 24
+
+    (21) end_el -> BG_CLOSE_EL ID . END_EL
+
+    END_EL          shift and go to state 31
+
+
+state 25
+
+    (23) for_el -> BG_OPEN_EL FOR ID . IN id END_EL els BG_CLOSE_EL FOR END_EL
+
+    IN              shift and go to state 32
+
+
+state 26
+
+    (9) static_attr -> ID ASSIGN . QUOTE_1 NUMBER QUOTE_1
+    (10) static_attr -> ID ASSIGN . QUOTE_2 NUMBER QUOTE_2
+    (11) static_attr -> ID ASSIGN . NORMSTRING
+
+    QUOTE_1         shift and go to state 33
+    QUOTE_2         shift and go to state 34
+    NORMSTRING      shift and go to state 35
+
+
+state 27
+
+    (22) op_el -> BG_OPEN_EL ID attrs END_EL .
+
+    BG_OPEN_EL      reduce using rule 22 (op_el -> BG_OPEN_EL ID attrs END_EL .)
+    BG_CLOSE_EL     reduce using rule 22 (op_el -> BG_OPEN_EL ID attrs END_EL .)
+
+
+state 28
+
+    (2) attrs -> attrs attr .
+
+    END_EL          reduce using rule 2 (attrs -> attrs attr .)
+    ID              reduce using rule 2 (attrs -> attrs attr .)
+    EXE_FLAG        reduce using rule 2 (attrs -> attrs attr .)
+    EV_FLAG         reduce using rule 2 (attrs -> attrs attr .)
+
+
+state 29
+
+    (12) exec_attr -> EXE_FLAG ID . ASSIGN QUOTE_1 expr QUOTE_1
+    (13) exec_attr -> EXE_FLAG ID . ASSIGN QUOTE_2 expr QUOTE_2
+
+    ASSIGN          shift and go to state 36
+
+
+state 30
+
+    (14) event_attr -> EV_FLAG ID . ASSIGN QUOTE_1 statement QUOTE_1
+    (15) event_attr -> EV_FLAG ID . ASSIGN QUOTE_2 statement QUOTE_2
+
+    ASSIGN          shift and go to state 37
+
+
+state 31
+
+    (21) end_el -> BG_CLOSE_EL ID END_EL .
+
+    $end            reduce using rule 21 (end_el -> BG_CLOSE_EL ID END_EL .)
+    BG_CLOSE_EL     reduce using rule 21 (end_el -> BG_CLOSE_EL ID END_EL .)
+    BG_OPEN_EL      reduce using rule 21 (end_el -> BG_CLOSE_EL ID END_EL .)
+
+
+state 32
+
+    (23) for_el -> BG_OPEN_EL FOR ID IN . id END_EL els BG_CLOSE_EL FOR END_EL
+    (19) id -> . id PUNCT ID
+    (20) id -> . ID
+
+    ID              shift and go to state 38
+
+    id                             shift and go to state 39
+
+state 33
+
+    (9) static_attr -> ID ASSIGN QUOTE_1 . NUMBER QUOTE_1
+
+    NUMBER          shift and go to state 40
+
+
+state 34
+
+    (10) static_attr -> ID ASSIGN QUOTE_2 . NUMBER QUOTE_2
+
+    NUMBER          shift and go to state 41
+
+
+state 35
+
+    (11) static_attr -> ID ASSIGN NORMSTRING .
+
+    END_EL          reduce using rule 11 (static_attr -> ID ASSIGN NORMSTRING .)
+    ID              reduce using rule 11 (static_attr -> ID ASSIGN NORMSTRING .)
+    EXE_FLAG        reduce using rule 11 (static_attr -> ID ASSIGN NORMSTRING .)
+    EV_FLAG         reduce using rule 11 (static_attr -> ID ASSIGN NORMSTRING .)
+
+
+state 36
+
+    (12) exec_attr -> EXE_FLAG ID ASSIGN . QUOTE_1 expr QUOTE_1
+    (13) exec_attr -> EXE_FLAG ID ASSIGN . QUOTE_2 expr QUOTE_2
+
+    QUOTE_1         shift and go to state 42
+    QUOTE_2         shift and go to state 43
+
+
+state 37
+
+    (14) event_attr -> EV_FLAG ID ASSIGN . QUOTE_1 statement QUOTE_1
+    (15) event_attr -> EV_FLAG ID ASSIGN . QUOTE_2 statement QUOTE_2
+
+    QUOTE_1         shift and go to state 44
+    QUOTE_2         shift and go to state 45
+
+
+state 38
+
+    (20) id -> ID .
+
+    END_EL          reduce using rule 20 (id -> ID .)
+    PUNCT           reduce using rule 20 (id -> ID .)
+    QUOTE_1         reduce using rule 20 (id -> ID .)
+    QUOTE_2         reduce using rule 20 (id -> ID .)
+    ASSIGN          reduce using rule 20 (id -> ID .)
+
+
+state 39
+
+    (23) for_el -> BG_OPEN_EL FOR ID IN id . END_EL els BG_CLOSE_EL FOR END_EL
+    (19) id -> id . PUNCT ID
+
+    END_EL          shift and go to state 46
+    PUNCT           shift and go to state 47
+
+
+state 40
+
+    (9) static_attr -> ID ASSIGN QUOTE_1 NUMBER . QUOTE_1
+
+    QUOTE_1         shift and go to state 48
+
+
+state 41
+
+    (10) static_attr -> ID ASSIGN QUOTE_2 NUMBER . QUOTE_2
+
+    QUOTE_2         shift and go to state 49
+
+
+state 42
+
+    (12) exec_attr -> EXE_FLAG ID ASSIGN QUOTE_1 . expr QUOTE_1
+    (5) expr -> . id
+    (19) id -> . id PUNCT ID
+    (20) id -> . ID
+
+    ID              shift and go to state 38
+
+    expr                           shift and go to state 50
+    id                             shift and go to state 51
+
+state 43
+
+    (13) exec_attr -> EXE_FLAG ID ASSIGN QUOTE_2 . expr QUOTE_2
+    (5) expr -> . id
+    (19) id -> . id PUNCT ID
+    (20) id -> . ID
+
+    ID              shift and go to state 38
+
+    expr                           shift and go to state 52
+    id                             shift and go to state 51
+
+state 44
+
+    (14) event_attr -> EV_FLAG ID ASSIGN QUOTE_1 . statement QUOTE_1
+    (7) statement -> . assign_statement
+    (8) statement -> . expr
+    (6) assign_statement -> . id ASSIGN expr
+    (5) expr -> . id
+    (19) id -> . id PUNCT ID
+    (20) id -> . ID
+
+    ID              shift and go to state 38
+
+    statement                      shift and go to state 53
+    assign_statement               shift and go to state 54
+    expr                           shift and go to state 55
+    id                             shift and go to state 56
+
+state 45
+
+    (15) event_attr -> EV_FLAG ID ASSIGN QUOTE_2 . statement QUOTE_2
+    (7) statement -> . assign_statement
+    (8) statement -> . expr
+    (6) assign_statement -> . id ASSIGN expr
+    (5) expr -> . id
+    (19) id -> . id PUNCT ID
+    (20) id -> . ID
+
+    ID              shift and go to state 38
+
+    statement                      shift and go to state 57
+    assign_statement               shift and go to state 54
+    expr                           shift and go to state 55
+    id                             shift and go to state 56
+
+state 46
+
+    (23) for_el -> BG_OPEN_EL FOR ID IN id END_EL . els BG_CLOSE_EL FOR END_EL
+    (25) els -> . els el
+    (26) els -> . el
+    (27) els -> . empty
+    (28) el -> . normal_el
+    (29) el -> . for_el
+    (1) empty -> .
+    (24) normal_el -> . op_el els end_el
+    (23) for_el -> . BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL
+    (22) op_el -> . BG_OPEN_EL ID attrs END_EL
+
+  ! shift/reduce conflict for BG_OPEN_EL resolved as shift
+    BG_CLOSE_EL     reduce using rule 1 (empty -> .)
+    BG_OPEN_EL      shift and go to state 9
+
+  ! BG_OPEN_EL      [ reduce using rule 1 (empty -> .) ]
+
+    els                            shift and go to state 58
+    el                             shift and go to state 5
+    empty                          shift and go to state 6
+    normal_el                      shift and go to state 7
+    for_el                         shift and go to state 8
+    op_el                          shift and go to state 2
+
+state 47
+
+    (19) id -> id PUNCT . ID
+
+    ID              shift and go to state 59
+
+
+state 48
+
+    (9) static_attr -> ID ASSIGN QUOTE_1 NUMBER QUOTE_1 .
+
+    END_EL          reduce using rule 9 (static_attr -> ID ASSIGN QUOTE_1 NUMBER QUOTE_1 .)
+    ID              reduce using rule 9 (static_attr -> ID ASSIGN QUOTE_1 NUMBER QUOTE_1 .)
+    EXE_FLAG        reduce using rule 9 (static_attr -> ID ASSIGN QUOTE_1 NUMBER QUOTE_1 .)
+    EV_FLAG         reduce using rule 9 (static_attr -> ID ASSIGN QUOTE_1 NUMBER QUOTE_1 .)
+
+
+state 49
+
+    (10) static_attr -> ID ASSIGN QUOTE_2 NUMBER QUOTE_2 .
+
+    END_EL          reduce using rule 10 (static_attr -> ID ASSIGN QUOTE_2 NUMBER QUOTE_2 .)
+    ID              reduce using rule 10 (static_attr -> ID ASSIGN QUOTE_2 NUMBER QUOTE_2 .)
+    EXE_FLAG        reduce using rule 10 (static_attr -> ID ASSIGN QUOTE_2 NUMBER QUOTE_2 .)
+    EV_FLAG         reduce using rule 10 (static_attr -> ID ASSIGN QUOTE_2 NUMBER QUOTE_2 .)
+
+
+state 50
+
+    (12) exec_attr -> EXE_FLAG ID ASSIGN QUOTE_1 expr . QUOTE_1
+
+    QUOTE_1         shift and go to state 60
+
+
+state 51
+
+    (5) expr -> id .
+    (19) id -> id . PUNCT ID
+
+    QUOTE_1         reduce using rule 5 (expr -> id .)
+    QUOTE_2         reduce using rule 5 (expr -> id .)
+    PUNCT           shift and go to state 47
+
+
+state 52
+
+    (13) exec_attr -> EXE_FLAG ID ASSIGN QUOTE_2 expr . QUOTE_2
+
+    QUOTE_2         shift and go to state 61
+
+
+state 53
+
+    (14) event_attr -> EV_FLAG ID ASSIGN QUOTE_1 statement . QUOTE_1
+
+    QUOTE_1         shift and go to state 62
+
+
+state 54
+
+    (7) statement -> assign_statement .
+
+    QUOTE_1         reduce using rule 7 (statement -> assign_statement .)
+    QUOTE_2         reduce using rule 7 (statement -> assign_statement .)
+
+
+state 55
+
+    (8) statement -> expr .
+
+    QUOTE_1         reduce using rule 8 (statement -> expr .)
+    QUOTE_2         reduce using rule 8 (statement -> expr .)
+
+
+state 56
+
+    (6) assign_statement -> id . ASSIGN expr
+    (5) expr -> id .
+    (19) id -> id . PUNCT ID
+
+    ASSIGN          shift and go to state 63
+    QUOTE_1         reduce using rule 5 (expr -> id .)
+    QUOTE_2         reduce using rule 5 (expr -> id .)
+    PUNCT           shift and go to state 47
+
+
+state 57
+
+    (15) event_attr -> EV_FLAG ID ASSIGN QUOTE_2 statement . QUOTE_2
+
+    QUOTE_2         shift and go to state 64
+
+
+state 58
+
+    (23) for_el -> BG_OPEN_EL FOR ID IN id END_EL els . BG_CLOSE_EL FOR END_EL
+    (25) els -> els . el
+    (28) el -> . normal_el
+    (29) el -> . for_el
+    (24) normal_el -> . op_el els end_el
+    (23) for_el -> . BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL
+    (22) op_el -> . BG_OPEN_EL ID attrs END_EL
+
+    BG_CLOSE_EL     shift and go to state 65
+    BG_OPEN_EL      shift and go to state 9
+
+    el                             shift and go to state 12
+    normal_el                      shift and go to state 7
+    for_el                         shift and go to state 8
+    op_el                          shift and go to state 2
+
+state 59
+
+    (19) id -> id PUNCT ID .
+
+    END_EL          reduce using rule 19 (id -> id PUNCT ID .)
+    PUNCT           reduce using rule 19 (id -> id PUNCT ID .)
+    QUOTE_1         reduce using rule 19 (id -> id PUNCT ID .)
+    QUOTE_2         reduce using rule 19 (id -> id PUNCT ID .)
+    ASSIGN          reduce using rule 19 (id -> id PUNCT ID .)
+
+
+state 60
+
+    (12) exec_attr -> EXE_FLAG ID ASSIGN QUOTE_1 expr QUOTE_1 .
+
+    END_EL          reduce using rule 12 (exec_attr -> EXE_FLAG ID ASSIGN QUOTE_1 expr QUOTE_1 .)
+    ID              reduce using rule 12 (exec_attr -> EXE_FLAG ID ASSIGN QUOTE_1 expr QUOTE_1 .)
+    EXE_FLAG        reduce using rule 12 (exec_attr -> EXE_FLAG ID ASSIGN QUOTE_1 expr QUOTE_1 .)
+    EV_FLAG         reduce using rule 12 (exec_attr -> EXE_FLAG ID ASSIGN QUOTE_1 expr QUOTE_1 .)
+
+
+state 61
+
+    (13) exec_attr -> EXE_FLAG ID ASSIGN QUOTE_2 expr QUOTE_2 .
+
+    END_EL          reduce using rule 13 (exec_attr -> EXE_FLAG ID ASSIGN QUOTE_2 expr QUOTE_2 .)
+    ID              reduce using rule 13 (exec_attr -> EXE_FLAG ID ASSIGN QUOTE_2 expr QUOTE_2 .)
+    EXE_FLAG        reduce using rule 13 (exec_attr -> EXE_FLAG ID ASSIGN QUOTE_2 expr QUOTE_2 .)
+    EV_FLAG         reduce using rule 13 (exec_attr -> EXE_FLAG ID ASSIGN QUOTE_2 expr QUOTE_2 .)
+
+
+state 62
+
+    (14) event_attr -> EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1 .
+
+    END_EL          reduce using rule 14 (event_attr -> EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1 .)
+    ID              reduce using rule 14 (event_attr -> EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1 .)
+    EXE_FLAG        reduce using rule 14 (event_attr -> EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1 .)
+    EV_FLAG         reduce using rule 14 (event_attr -> EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1 .)
+
+
+state 63
+
+    (6) assign_statement -> id ASSIGN . expr
+    (5) expr -> . id
+    (19) id -> . id PUNCT ID
+    (20) id -> . ID
+
+    ID              shift and go to state 38
+
+    id                             shift and go to state 51
+    expr                           shift and go to state 66
+
+state 64
+
+    (15) event_attr -> EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2 .
+
+    END_EL          reduce using rule 15 (event_attr -> EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2 .)
+    ID              reduce using rule 15 (event_attr -> EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2 .)
+    EXE_FLAG        reduce using rule 15 (event_attr -> EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2 .)
+    EV_FLAG         reduce using rule 15 (event_attr -> EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2 .)
+
+
+state 65
+
+    (23) for_el -> BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL . FOR END_EL
+
+    FOR             shift and go to state 67
+
+
+state 66
+
+    (6) assign_statement -> id ASSIGN expr .
+
+    QUOTE_1         reduce using rule 6 (assign_statement -> id ASSIGN expr .)
+    QUOTE_2         reduce using rule 6 (assign_statement -> id ASSIGN expr .)
+
+
+state 67
+
+    (23) for_el -> BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR . END_EL
+
+    END_EL          shift and go to state 68
+
+
+state 68
+
+    (23) for_el -> BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL .
+
+    BG_CLOSE_EL     reduce using rule 23 (for_el -> BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL .)
+    BG_OPEN_EL      reduce using rule 23 (for_el -> BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL .)
+
+WARNING: 
+WARNING: Conflicts:
+WARNING: 
+WARNING: shift/reduce conflict for BG_OPEN_EL in state 2 resolved as shift
+WARNING: shift/reduce conflict for ID in state 10 resolved as shift
+WARNING: shift/reduce conflict for EXE_FLAG in state 10 resolved as shift
+WARNING: shift/reduce conflict for EV_FLAG in state 10 resolved as shift
+WARNING: shift/reduce conflict for BG_OPEN_EL in state 46 resolved as shift

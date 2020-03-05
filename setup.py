@@ -1,13 +1,16 @@
 from setuptools import setup, find_packages
 
-import nuclear
+import sys
+sys.path.append(".")
+
+from nuclear import __version__
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 setup(
     name='nuclear',
-    version=nuclear.__version__,
+    version=__version__,
 
     packages=find_packages(),
     
