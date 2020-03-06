@@ -4,16 +4,16 @@ from .observer import Observer
 
 class Observable(object):
     def __getattribute__(self, key):
-        if key == "__accessors":
-            return object.__getattribute__(self, key)
-        
-        if hasattr(self, '__accessors'):
+        try:
             accessors = object.__getattribute__(self, '__accessors')
-            if key in accessors:
+            
+            if accessors and key in accessors:
                 return accessors[key][0](self) # Getter
         
+        except AttributeError:
+            return object.__getattribute__(self, key)
+        
         return object.__getattribute__(self, key)
-
     def __setattr__(self, key, value):
         if key is not '__accessors' and hasattr(self, '__accessors'):
             accessors = object.__getattribute__(self, '__accessors')

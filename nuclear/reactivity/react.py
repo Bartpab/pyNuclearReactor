@@ -1,4 +1,5 @@
 from .dep import Dep
+from .watcher import Watcher
 
 def reactifyObject(obj):
     if hasattr(obj, '__accessors'):
@@ -11,17 +12,19 @@ def defineComputed(obj, key, fn):
     from .observe import observe
     from .augment import augment    
     
+    def __compute__(d):
+        obj.__data[key]["val"] = fn(d)
+        obj.__data[key]['dep'].notify()
+    
     obj.__data[key] = {
         "dep": Dep(),
         "w": Watcher(obj, __compute__)
     }
     
-    def __compute__(d):
-        obj.__data[key]["val"] = fn(d)
-    
     def __getter__(self):
-        if "val" not in obj__data[key]:
-            obj__data[key]["w"].get()
+        self.__data[key]['dep'].depend()
+        if "val" not in obj.__data[key]:
+            obj.__data[key]["w"].get()
         
         return obj.__data[key]["val"] 
     
@@ -62,10 +65,16 @@ def defineReactiveProperty(obj, key, value):
     
     obj.__accessors[key] = (__getter__, __setter__) 
 
+STACK = []
 def defineReactive(obj, key, value):   
     reactifyObject(obj)
     
     if key in obj.__accessors:
         return
     
+    if id(value) in STACK:
+        return
+    
+    STACK.append(id(value))
     defineReactiveProperty(obj, key, value)
+    STACK.pop(-1)

@@ -25,7 +25,7 @@ class Observer:
     def walk(self, obj, restrain=None):
         attrs = {**obj.__dict__}
 
-        for key, value in attrs.items():
+        for key, value in attrs.items():   
             if restrain:
                 if key in restrain:
                     defineReactive(obj, key, value)

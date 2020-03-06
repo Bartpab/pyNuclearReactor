@@ -1,3 +1,4 @@
+PATCH_CLS = {}
 
 def augment(value):
     """
@@ -13,8 +14,11 @@ def augment(value):
     
     try:
         if not isinstance(value, Observable) and hasattr(value, '__dict__'):
-            ObservablePatch = type(value.__class__.__name__, (value.__class__, Observable), {})
-            value.__class__ = ObservablePatch   
+            if not value.__class__ in PATCH_CLS:
+                ObservablePatch = type("Obs" + value.__class__.__name__, (Observable, value.__class__), {})
+                PATCH_CLS[value.__class__] = ObservablePatch
+            
+            value.__class__ = PATCH_CLS[value.__class__]   
             return value
         
         elif type(value) is list:

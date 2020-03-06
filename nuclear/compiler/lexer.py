@@ -1,7 +1,4 @@
-tokens = [
-    "FOR",
-    "IN",
-    
+tokens = [    
     "BG_CLOSE_EL",
     "BG_OPEN_EL",
     "END_EL",
@@ -15,14 +12,20 @@ tokens = [
     
     "EXE_FLAG",
     "EV_FLAG",
+    "NAMESPACE_FLAG",
     
     "NUMBER",
     "NORMSTRING",
+    
+    "COMMA",
+    "LPAR",
+    "RPAR"
 ]
 
 reserved = {
     'for' : 'FOR',
-    'in' : 'IN'
+    'in' : 'IN',
+    'if' : 'IF'
 }
 
 tokens += reserved.values()
@@ -31,9 +34,14 @@ t_PUNCT = r"[.]"
 
 t_ignore = ' \t\n'
 
+t_COMMA = r"[,]"
+t_LPAR = r"[(]"
+t_RPAR = r"[)]"
+
 t_BG_CLOSE_EL = r'</'
 t_BG_OPEN_EL = r'<'
 t_END_EL = r'>'
+t_NAMESPACE_FLAG = ":"
 
 states = (('str', 'inclusive'),)
 
@@ -84,8 +92,9 @@ def t_ASSIGN(t):
     return t
    
 def t_str_NORMSTRING(t):
-     r'\"(.*)?\"'
+     r'\"(.*?)\"'
      t.lexer.pop_state()   
+     t.value = t.value[1:-1]
      return t
 
 def t_NUMBER(t):

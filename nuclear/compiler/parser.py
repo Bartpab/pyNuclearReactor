@@ -14,9 +14,16 @@ def p_attrs(p):
     elif len(p) == 3:
         p[0] = p[1] + [p[2]]
 
+def p_fn(p):
+    '''
+        fn : id LPAR expr RPAR
+    '''
+    p[0] = ("fn", {"name": p[1], "args": [p[3]]})
+        
 def p_expr(p):
     '''
         expr : id 
+             | fn
     '''
     p[0] = ("expr", p[1])
     
@@ -40,9 +47,9 @@ def p_statement(p):
     p[0] = ("statement", p[1])
     
 def p_static_attr(p):
-    '''static_attr : ID ASSIGN QUOTE_1 NUMBER QUOTE_1
-           | ID ASSIGN QUOTE_2 NUMBER QUOTE_2
-           | ID ASSIGN NORMSTRING
+    '''static_attr : tag_name ASSIGN QUOTE_1 NUMBER QUOTE_1
+           | tag_name ASSIGN QUOTE_2 NUMBER QUOTE_2
+           | tag_name ASSIGN NORMSTRING
     '''     
     
     v = p[4] if len(p) == 6 else p[3]
@@ -57,10 +64,21 @@ def p_static_attr(p):
             "value": v
         }
     )
-    
+
+def p_tag_name(p):
+    '''
+        tag_name : ID
+                | tag_name NAMESPACE_FLAG ID
+    '''
+    if len(p) == 2:
+        p[0] = p[1]
+    else:
+        p[0] = p[1] + ":" + p[3]
+
+   
 def p_exec_attr(p):
-    '''exec_attr : EXE_FLAG ID ASSIGN QUOTE_1 expr QUOTE_1
-           | EXE_FLAG ID ASSIGN QUOTE_2 expr QUOTE_2
+    '''exec_attr : EXE_FLAG tag_name ASSIGN QUOTE_1 expr QUOTE_1
+           | EXE_FLAG tag_name ASSIGN QUOTE_2 expr QUOTE_2
     '''    
     p[0] = (
         "data", 
@@ -139,6 +157,15 @@ def p_for_el(p):
         "children": p[7]
     })
     
+def p_if_el(p):
+    '''
+        if_el : BG_OPEN_EL IF expr END_EL els BG_CLOSE_EL IF END_EL
+    '''
+    p[0] = ("if", {
+        "condition": p[3],
+        "children": p[5]
+    })
+        
 def p_normal_el(p):
     '''
        normal_el : op_el els end_el 
@@ -163,6 +190,7 @@ def p_els(p):
 def p_el(p):
     '''el : normal_el
           | for_el 
+          | if_el
     '''
     p[0] = p[1]
 
@@ -174,10 +202,5 @@ parser = yacc.yacc(start='normal_el')
 
 def parse(txt):
     lexer.input(txt)
-    while True:
-         tok = lexer.token()
-         if not tok: 
-             break      # No more input
-         print(tok)    
     node = parser.parse(txt, lexer=lexer)
     return ("root", node)

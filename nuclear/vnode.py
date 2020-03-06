@@ -10,9 +10,9 @@ def helpers(h, self):
     
     def _if(b, if_fn, else_fn=None):
         if b:
-            return [if_fn()]
+            return if_fn()
         elif else_fn:
-            return [else_fn()]
+            return else_fn()
         
         return []
     
@@ -63,7 +63,7 @@ class Tree(wx.TreeCtrl):
 
 def set_el_data(el, data):
     for key, value in data.items():
-        if key[0] == "$":
+        if key in ("sopt",):
             continue
             
         wMethName = "Set" + key[0].upper() + key[1:]
@@ -77,7 +77,12 @@ def unbind_el_events(el, events):
         
 def bind_el_events(el, events):
     for k, v in events.items():
-        el.Bind(k, v)
+        if k == "click" and type(el) is wx.Button:
+            el.Bind(wx.EVT_BUTTON, v)
+        elif k == "change" and type(el) is wx.TextCtrl:
+            el.Bind(wx.EVT_TEXT, lambda e: v(e.GetEventObject().GetValue()))
+        else:
+            el.Bind(k, v)
 
 def create_wel(parent_el, el_factory, data, events):
     """
@@ -112,7 +117,7 @@ def create_wtree(parent_el, vnode):
     pop = False
 
     if SIZER_STACK:
-        kw = vnode.data["$sizer_options"] if "$sizer_options" in vnode.data else {}
+        kw = vnode.data["sopt"] if "sopt" in vnode.data else {}
         SIZER_STACK[-1].Add(el, **kw)
     
     if el.GetSizer():

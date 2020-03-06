@@ -1,0 +1,22 @@
+<rod>
+<template>
+<panel>
+</panel>
+</template>
+
+<computed>
+def value(self):
+    return self._val + 1
+</computed>
+
+<methods>
+def mount(self):
+    pass
+</methods>
+
+<data>
+def data(self):
+    pass
+</data>
+
+</rod>
