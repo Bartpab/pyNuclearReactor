@@ -1,7 +1,6 @@
 import functools
 
 from .reactivity import observe, Watcher, defineComputed, defineReactive
-
 from .vnode import create_wtree, create_element, patch, open_wtree, close_wtree
 
 def dict2obj(**kw):
@@ -32,7 +31,7 @@ class Computed:
         setattr(data, self.name, self.getter())
         
 class BaseReactor:
-    def __init__(self, template, data, computed, methods):
+    def __init__(self, template, data, computed, methods, root):
         observe(self)
         
         self.bind_data(data)
@@ -47,6 +46,28 @@ class BaseReactor:
             setattr(self, name, functools.partial(method, self))
         
         self.events = []
+        self.root = root
+    
+    def patch(self):
+        self.render()
+    
+    def render(self): 
+        if not self.root:
+            return
+            
+        tpl = self.template
+        newNode = tpl(create_element, self)
+        
+        open_wtree(self.root)
+        if self.node is None:
+            self.node = newNode
+            create_wtree(self.root, self.node)
+        else:
+            self.node = patch(self.node, newNode)
+        
+        close_wtree(self.root)
+
+        return self.node   
     
     def emits(self, event_name, args):
         self.events.append((event_name, args))
@@ -66,6 +87,24 @@ class BaseReactor:
     # Lifecycle
     def mounted(self):
         pass
+
+class ReactorAssembly(BaseReactor):
+    def __init__(self, props, events, template, data, methods, computed, root):
+        BaseReactor.__init__(self, template, data, computed, methods)
+        
+        self.events = {}
+        
+        self.bind_data(props)
+        self.bind_events(events)
+    
+    def bind_events(self, events):
+        for ev_name, callback in events:
+            if ev_name not in self.events:
+                self.events[ev_name] =[] 
+            self.events[ev_name].append(callback)s   
+    
+    def emit(self, event, args):
+        pass
         
 class Reactor(BaseReactor):
     def set(self, key, value):
@@ -73,25 +112,10 @@ class Reactor(BaseReactor):
         setattr(self, key, value)
 
     def __init__(self, template, data, methods, computed, root):
-        BaseReactor.__init__(self, template, data, computed, methods)
-        self.root = root
+        BaseReactor.__init__(self, template, data, computed, methods, root)
 
     def nexTick(self, dt):
         Watcher.run_all()
 
-    def render(self): 
-        tpl = self.template
-        newNode = tpl(create_element, self)
-        
-        open_wtree(self.root)
-        
-        if self.node is None:
-            self.node = newNode
-            create_wtree(self.root, self.node)
-        else:
-            self.node = patch(self.node, newNode)
-        
-        close_wtree()
-        self.root.Layout()
-        return self.node
+
         

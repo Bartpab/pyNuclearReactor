@@ -145,6 +145,9 @@ def c(ast_node, symbol_table, event_methods):
     elif node_type == "expr":
         return _c(args)
     
+    elif node_type == "binop_expr":
+        return "{l} {op} {r}".format(l=_c(args["l"]), op=args["op"], r=_c(args["r"]))
+    
     elif node_type == "fn":
         fn_id = _c(args["name"])
         fn_args = [_c(c) for c in args["args"]]

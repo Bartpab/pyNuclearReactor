@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'normal_elASSIGN BG_CLOSE_EL BG_OPEN_EL COMMA END_EL EV_FLAG EXE_FLAG FOR ID IF IN LPAR NAMESPACE_FLAG NORMSTRING NUMBER PUNCT QUOTE_1 QUOTE_2 RPARempty :attrs : attrs attr \n             | attr \n             | empty \n        fn : id LPAR expr RPAR\n    \n        expr : id \n             | fn\n    \n        assign_statement : id ASSIGN expr\n    \n        statement : assign_statement \n                  | expr\n    static_attr : tag_name ASSIGN QUOTE_1 NUMBER QUOTE_1\n           | tag_name ASSIGN QUOTE_2 NUMBER QUOTE_2\n           | tag_name ASSIGN NORMSTRING\n    \n        tag_name : ID\n                | tag_name NAMESPACE_FLAG ID\n    exec_attr : EXE_FLAG tag_name ASSIGN QUOTE_1 expr QUOTE_1\n           | EXE_FLAG tag_name ASSIGN QUOTE_2 expr QUOTE_2\n    event_attr : EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1\n           | EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2\n    attr : static_attr\n           | exec_attr\n           | event_attr\n    \n        id : id PUNCT ID\n            | ID\n    \n        end_el : BG_CLOSE_EL ID END_EL\n    op_el : BG_OPEN_EL ID attrs END_EL\n    \n        for_el : BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL\n    \n        if_el : BG_OPEN_EL IF expr END_EL els BG_CLOSE_EL IF END_EL\n    \n       normal_el : op_el els end_el \n    \n        els : els el\n            | el\n            | empty\n    el : normal_el\n          | for_el \n          | if_el\n    '
+_lr_signature = 'normal_elASSIGN BG_CLOSE_EL BG_OPEN_EL COMMA COMMENT END_EL EV_FLAG EXE_FLAG FOR ID IF IN LPAR NAMESPACE_FLAG NORMSTRING NUMBER PIPE PUNCT QUOTE_1 QUOTE_2 RPARempty :attrs : attrs attr \n             | attr \n             | empty \n        fn : id LPAR expr RPAR\n    \n        binop_expr : expr PIPE expr\n    \n        expr : id \n             | fn\n             | binop_expr\n    \n        assign_statement : id ASSIGN expr\n    \n        statement : assign_statement \n                  | expr\n    static_attr : tag_name ASSIGN QUOTE_1 NUMBER QUOTE_1\n           | tag_name ASSIGN QUOTE_2 NUMBER QUOTE_2\n           | tag_name ASSIGN NORMSTRING\n    \n        tag_name : ID\n                | tag_name NAMESPACE_FLAG ID\n    exec_attr : EXE_FLAG tag_name ASSIGN QUOTE_1 expr QUOTE_1\n           | EXE_FLAG tag_name ASSIGN QUOTE_2 expr QUOTE_2\n    event_attr : EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1\n           | EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2\n    attr : static_attr\n           | exec_attr\n           | event_attr\n    \n        id : id PUNCT ID\n            | ID\n    \n        end_el : BG_CLOSE_EL ID END_EL\n    op_el : BG_OPEN_EL ID attrs END_EL\n    \n        for_el : BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL\n    \n        if_el : BG_OPEN_EL IF expr END_EL els BG_CLOSE_EL IF END_EL\n    \n       normal_el : op_el els end_el \n    \n        els : els el\n            | el\n            | empty\n    el : normal_el\n          | for_el \n          | if_el\n    '
     
-_lr_action_items = {'BG_OPEN_EL':([0,2,4,5,6,7,8,9,12,13,33,39,41,51,60,72,80,83,],[3,10,10,-31,-32,-33,-34,-35,-29,-30,-26,-25,10,10,10,10,-28,-27,]),'$end':([1,12,39,],[0,-29,-25,]),'BG_CLOSE_EL':([2,4,5,6,7,8,9,12,13,33,39,41,51,60,72,80,83,],[-1,14,-31,-32,-33,-34,-35,-29,-30,-26,-25,-1,61,-1,79,-28,-27,]),'ID':([3,10,11,14,15,16,18,19,20,21,22,23,25,26,34,36,40,42,43,46,56,57,58,59,63,64,74,75,76,77,78,],[11,11,17,27,28,32,17,-3,-4,-20,-21,-22,17,38,-2,47,32,52,32,-13,32,32,32,32,-11,-12,-16,-17,-18,32,-19,]),'FOR':([10,79,],[15,82,]),'IF':([10,61,],[16,73,]),'END_EL':([11,18,19,20,21,22,23,27,29,30,31,32,34,46,50,52,62,63,64,73,74,75,76,78,82,],[-1,33,-3,-4,-20,-21,-22,39,41,-6,-7,-24,-2,-13,60,-23,-5,-11,-12,80,-16,-17,-18,-19,83,]),'EXE_FLAG':([11,18,19,20,21,22,23,34,46,63,64,74,75,76,78,],[25,25,-3,-4,-20,-21,-22,-2,-13,-11,-12,-16,-17,-18,-19,]),'EV_FLAG':([11,18,19,20,21,22,23,34,46,63,64,74,75,76,78,],[26,26,-3,-4,-20,-21,-22,-2,-13,-11,-12,-16,-17,-18,-19,]),'ASSIGN':([17,24,32,37,38,47,52,70,],[-14,35,-24,48,49,-15,-23,77,]),'NAMESPACE_FLAG':([17,24,37,47,],[-14,36,36,-15,]),'IN':([28,],[40,]),'RPAR':([30,31,32,52,53,62,],[-6,-7,-24,-23,62,-5,]),'QUOTE_1':([30,31,32,35,48,49,52,54,62,65,67,68,69,70,81,],[-6,-7,-24,44,56,58,-23,63,-5,74,76,-9,-10,-6,-8,]),'QUOTE_2':([30,31,32,35,48,49,52,55,62,66,68,69,70,71,81,],[-6,-7,-24,45,57,59,-23,64,-5,75,-9,-10,-6,78,-8,]),'PUNCT':([30,32,50,52,70,],[42,-24,42,-23,42,]),'LPAR':([30,32,52,70,],[43,-24,-23,43,]),'NORMSTRING':([35,],[46,]),'NUMBER':([44,45,],[54,55,]),}
+_lr_action_items = {'BG_OPEN_EL':([0,2,4,5,6,7,8,9,12,13,34,40,42,53,63,75,83,86,],[3,10,10,-33,-34,-35,-36,-37,-31,-32,-28,-27,10,10,10,10,-30,-29,]),'$end':([1,12,40,],[0,-31,-27,]),'BG_CLOSE_EL':([2,4,5,6,7,8,9,12,13,34,40,42,53,63,75,83,86,],[-1,14,-33,-34,-35,-36,-37,-31,-32,-28,-27,-1,64,-1,82,-30,-29,]),'ID':([3,10,11,14,15,16,18,19,20,21,22,23,25,26,35,37,41,43,44,45,48,59,60,61,62,66,67,77,78,79,80,81,],[11,11,17,27,28,33,17,-3,-4,-22,-23,-24,17,39,-2,49,33,33,55,33,-15,33,33,33,33,-13,-14,-18,-19,-20,33,-21,]),'FOR':([10,82,],[15,85,]),'IF':([10,64,],[16,76,]),'END_EL':([11,18,19,20,21,22,23,27,29,30,31,32,33,35,48,52,54,55,65,66,67,76,77,78,79,81,85,],[-1,34,-3,-4,-22,-23,-24,40,42,-7,-8,-9,-26,-2,-15,63,-6,-25,-5,-13,-14,83,-18,-19,-20,-21,86,]),'EXE_FLAG':([11,18,19,20,21,22,23,35,48,66,67,77,78,79,81,],[25,25,-3,-4,-22,-23,-24,-2,-15,-13,-14,-18,-19,-20,-21,]),'EV_FLAG':([11,18,19,20,21,22,23,35,48,66,67,77,78,79,81,],[26,26,-3,-4,-22,-23,-24,-2,-15,-13,-14,-18,-19,-20,-21,]),'ASSIGN':([17,24,33,38,39,49,55,73,],[-16,36,-26,50,51,-17,-25,80,]),'NAMESPACE_FLAG':([17,24,38,49,],[-16,37,37,-17,]),'IN':([28,],[41,]),'PIPE':([29,30,31,32,33,54,55,56,65,68,69,72,73,84,],[43,-7,-8,-9,-26,43,-25,43,-5,43,43,43,-7,43,]),'RPAR':([30,31,32,33,54,55,56,65,],[-7,-8,-9,-26,-6,-25,65,-5,]),'QUOTE_1':([30,31,32,33,36,50,51,54,55,57,65,68,70,71,72,73,84,],[-7,-8,-9,-26,46,59,61,-6,-25,66,-5,77,79,-11,-12,-7,-10,]),'QUOTE_2':([30,31,32,33,36,50,51,54,55,58,65,69,71,72,73,74,84,],[-7,-8,-9,-26,47,60,62,-6,-25,67,-5,78,-11,-12,-7,81,-10,]),'PUNCT':([30,33,52,55,73,],[44,-26,44,-25,44,]),'LPAR':([30,33,55,73,],[45,-26,-25,45,]),'NORMSTRING':([36,],[48,]),'NUMBER':([46,47,],[57,58,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'normal_el':([0,2,4,41,51,60,72,],[1,7,7,7,7,7,7,]),'op_el':([0,2,4,41,51,60,72,],[2,2,2,2,2,2,2,]),'els':([2,41,60,],[4,51,72,]),'el':([2,4,41,51,60,72,],[5,13,5,13,5,13,]),'empty':([2,11,41,60,],[6,20,6,6,]),'for_el':([2,4,41,51,60,72,],[8,8,8,8,8,8,]),'if_el':([2,4,41,51,60,72,],[9,9,9,9,9,9,]),'end_el':([4,],[12,]),'attrs':([11,],[18,]),'attr':([11,18,],[19,34,]),'static_attr':([11,18,],[21,21,]),'exec_attr':([11,18,],[22,22,]),'event_attr':([11,18,],[23,23,]),'tag_name':([11,18,25,],[24,24,37,]),'expr':([16,43,56,57,58,59,77,],[29,53,65,66,69,69,81,]),'id':([16,40,43,56,57,58,59,77,],[30,50,30,30,30,70,70,30,]),'fn':([16,43,56,57,58,59,77,],[31,31,31,31,31,31,31,]),'statement':([58,59,],[67,71,]),'assign_statement':([58,59,],[68,68,]),}
+_lr_goto_items = {'normal_el':([0,2,4,42,53,63,75,],[1,7,7,7,7,7,7,]),'op_el':([0,2,4,42,53,63,75,],[2,2,2,2,2,2,2,]),'els':([2,42,63,],[4,53,75,]),'el':([2,4,42,53,63,75,],[5,13,5,13,5,13,]),'empty':([2,11,42,63,],[6,20,6,6,]),'for_el':([2,4,42,53,63,75,],[8,8,8,8,8,8,]),'if_el':([2,4,42,53,63,75,],[9,9,9,9,9,9,]),'end_el':([4,],[12,]),'attrs':([11,],[18,]),'attr':([11,18,],[19,35,]),'static_attr':([11,18,],[21,21,]),'exec_attr':([11,18,],[22,22,]),'event_attr':([11,18,],[23,23,]),'tag_name':([11,18,25,],[24,24,38,]),'expr':([16,43,45,59,60,61,62,80,],[29,54,56,68,69,72,72,84,]),'id':([16,41,43,45,59,60,61,62,80,],[30,52,30,30,30,30,73,73,30,]),'fn':([16,43,45,59,60,61,62,80,],[31,31,31,31,31,31,31,31,]),'binop_expr':([16,43,45,59,60,61,62,80,],[32,32,32,32,32,32,32,32,]),'statement':([61,62,],[70,74,]),'assign_statement':([61,62,],[71,71,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -32,34 +32,36 @@ _lr_productions = [
   ('attrs -> attr','attrs',1,'p_attrs','parser.py',9),
   ('attrs -> empty','attrs',1,'p_attrs','parser.py',10),
   ('fn -> id LPAR expr RPAR','fn',4,'p_fn','parser.py',19),
-  ('expr -> id','expr',1,'p_expr','parser.py',25),
-  ('expr -> fn','expr',1,'p_expr','parser.py',26),
-  ('assign_statement -> id ASSIGN expr','assign_statement',3,'p_assign_statement','parser.py',32),
-  ('statement -> assign_statement','statement',1,'p_statement','parser.py',44),
-  ('statement -> expr','statement',1,'p_statement','parser.py',45),
-  ('static_attr -> tag_name ASSIGN QUOTE_1 NUMBER QUOTE_1','static_attr',5,'p_static_attr','parser.py',50),
-  ('static_attr -> tag_name ASSIGN QUOTE_2 NUMBER QUOTE_2','static_attr',5,'p_static_attr','parser.py',51),
-  ('static_attr -> tag_name ASSIGN NORMSTRING','static_attr',3,'p_static_attr','parser.py',52),
-  ('tag_name -> ID','tag_name',1,'p_tag_name','parser.py',70),
-  ('tag_name -> tag_name NAMESPACE_FLAG ID','tag_name',3,'p_tag_name','parser.py',71),
-  ('exec_attr -> EXE_FLAG tag_name ASSIGN QUOTE_1 expr QUOTE_1','exec_attr',6,'p_exec_attr','parser.py',80),
-  ('exec_attr -> EXE_FLAG tag_name ASSIGN QUOTE_2 expr QUOTE_2','exec_attr',6,'p_exec_attr','parser.py',81),
-  ('event_attr -> EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1','event_attr',6,'p_event_attr','parser.py',93),
-  ('event_attr -> EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2','event_attr',6,'p_event_attr','parser.py',94),
-  ('attr -> static_attr','attr',1,'p_attr','parser.py',105),
-  ('attr -> exec_attr','attr',1,'p_attr','parser.py',106),
-  ('attr -> event_attr','attr',1,'p_attr','parser.py',107),
-  ('id -> id PUNCT ID','id',3,'p_id','parser.py',113),
-  ('id -> ID','id',1,'p_id','parser.py',114),
-  ('end_el -> BG_CLOSE_EL ID END_EL','end_el',3,'p_end_el','parser.py',125),
-  ('op_el -> BG_OPEN_EL ID attrs END_EL','op_el',4,'p_op_el','parser.py',130),
-  ('for_el -> BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL','for_el',10,'p_for_el','parser.py',152),
-  ('if_el -> BG_OPEN_EL IF expr END_EL els BG_CLOSE_EL IF END_EL','if_el',8,'p_if_el','parser.py',162),
-  ('normal_el -> op_el els end_el','normal_el',3,'p_normal_el','parser.py',171),
-  ('els -> els el','els',2,'p_els','parser.py',181),
-  ('els -> el','els',1,'p_els','parser.py',182),
-  ('els -> empty','els',1,'p_els','parser.py',183),
-  ('el -> normal_el','el',1,'p_el','parser.py',191),
-  ('el -> for_el','el',1,'p_el','parser.py',192),
-  ('el -> if_el','el',1,'p_el','parser.py',193),
+  ('binop_expr -> expr PIPE expr','binop_expr',3,'p_binop_expr','parser.py',25),
+  ('expr -> id','expr',1,'p_expr','parser.py',31),
+  ('expr -> fn','expr',1,'p_expr','parser.py',32),
+  ('expr -> binop_expr','expr',1,'p_expr','parser.py',33),
+  ('assign_statement -> id ASSIGN expr','assign_statement',3,'p_assign_statement','parser.py',39),
+  ('statement -> assign_statement','statement',1,'p_statement','parser.py',51),
+  ('statement -> expr','statement',1,'p_statement','parser.py',52),
+  ('static_attr -> tag_name ASSIGN QUOTE_1 NUMBER QUOTE_1','static_attr',5,'p_static_attr','parser.py',57),
+  ('static_attr -> tag_name ASSIGN QUOTE_2 NUMBER QUOTE_2','static_attr',5,'p_static_attr','parser.py',58),
+  ('static_attr -> tag_name ASSIGN NORMSTRING','static_attr',3,'p_static_attr','parser.py',59),
+  ('tag_name -> ID','tag_name',1,'p_tag_name','parser.py',77),
+  ('tag_name -> tag_name NAMESPACE_FLAG ID','tag_name',3,'p_tag_name','parser.py',78),
+  ('exec_attr -> EXE_FLAG tag_name ASSIGN QUOTE_1 expr QUOTE_1','exec_attr',6,'p_exec_attr','parser.py',87),
+  ('exec_attr -> EXE_FLAG tag_name ASSIGN QUOTE_2 expr QUOTE_2','exec_attr',6,'p_exec_attr','parser.py',88),
+  ('event_attr -> EV_FLAG ID ASSIGN QUOTE_1 statement QUOTE_1','event_attr',6,'p_event_attr','parser.py',100),
+  ('event_attr -> EV_FLAG ID ASSIGN QUOTE_2 statement QUOTE_2','event_attr',6,'p_event_attr','parser.py',101),
+  ('attr -> static_attr','attr',1,'p_attr','parser.py',112),
+  ('attr -> exec_attr','attr',1,'p_attr','parser.py',113),
+  ('attr -> event_attr','attr',1,'p_attr','parser.py',114),
+  ('id -> id PUNCT ID','id',3,'p_id','parser.py',120),
+  ('id -> ID','id',1,'p_id','parser.py',121),
+  ('end_el -> BG_CLOSE_EL ID END_EL','end_el',3,'p_end_el','parser.py',132),
+  ('op_el -> BG_OPEN_EL ID attrs END_EL','op_el',4,'p_op_el','parser.py',137),
+  ('for_el -> BG_OPEN_EL FOR ID IN id END_EL els BG_CLOSE_EL FOR END_EL','for_el',10,'p_for_el','parser.py',159),
+  ('if_el -> BG_OPEN_EL IF expr END_EL els BG_CLOSE_EL IF END_EL','if_el',8,'p_if_el','parser.py',169),
+  ('normal_el -> op_el els end_el','normal_el',3,'p_normal_el','parser.py',178),
+  ('els -> els el','els',2,'p_els','parser.py',188),
+  ('els -> el','els',1,'p_els','parser.py',189),
+  ('els -> empty','els',1,'p_els','parser.py',190),
+  ('el -> normal_el','el',1,'p_el','parser.py',198),
+  ('el -> for_el','el',1,'p_el','parser.py',199),
+  ('el -> if_el','el',1,'p_el','parser.py',200),
 ]

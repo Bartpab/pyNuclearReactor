@@ -4,17 +4,19 @@ from ..compiler import compile
 import ast
 
 INIT_FILE = """# Automatically generated __init__ 
-from .methods   import methods
-from .computed  import computed
-from .data      import data
-from .template  import render
+from .methods       import methods
+from .computed      import computed
+from .data          import data
+from .template      import render
+from .rods          import rods
 
 def rod():
     return {
         "template": render,
         "data":     data(),
         "methods":  methods,
-        "computed": computed
+        "computed": computed,
+        "rods": rods
     }
 """
 import re

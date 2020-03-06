@@ -19,7 +19,10 @@ tokens = [
     
     "COMMA",
     "LPAR",
-    "RPAR"
+    "RPAR",
+    
+    "PIPE",
+    "COMMENT"
 ]
 
 reserved = {
@@ -38,10 +41,13 @@ t_COMMA = r"[,]"
 t_LPAR = r"[(]"
 t_RPAR = r"[)]"
 
+t_PIPE = r"[|]"
 t_BG_CLOSE_EL = r'</'
 t_BG_OPEN_EL = r'<'
 t_END_EL = r'>'
 t_NAMESPACE_FLAG = ":"
+
+t_ignore_COMMENT = r'<!--(.*?)-->'
 
 states = (('str', 'inclusive'),)
 

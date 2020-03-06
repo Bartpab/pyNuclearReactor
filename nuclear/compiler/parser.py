@@ -19,11 +19,18 @@ def p_fn(p):
         fn : id LPAR expr RPAR
     '''
     p[0] = ("fn", {"name": p[1], "args": [p[3]]})
-        
+
+def p_binop_expr(p):
+    '''
+        binop_expr : expr PIPE expr
+    '''
+    p[0] = ("binop_expr", {"l": p[1], "op": p[2], "r": p[3]})    
+    
 def p_expr(p):
     '''
         expr : id 
              | fn
+             | binop_expr
     '''
     p[0] = ("expr", p[1])
     

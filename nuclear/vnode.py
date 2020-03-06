@@ -103,34 +103,39 @@ def open_wtree(root_el):
     if root_el.GetSizer():
         SIZER_STACK.append(root_el.GetSizer())
 
-def close_wtree():
-    SIZER_STACK = []
+def close_wtree(root_el):
+    if root_el.GetSizer():
+        SIZER_STACK.remove(root_el.GetSizer())
     
 def create_wtree(parent_el, vnode):
     """
         Recursively create the widget tree
     """
-    el = create_wel(parent_el, vnode.el_factory, vnode.data, vnode.events)
-    
-    vnode.el = el
-    
-    pop = False
+    if vnode.is_component:
+        vnode.componentInstance.root = parent_el
+        vnode.mount()
+    else:
+        el = create_wel(parent_el, vnode.el_factory, vnode.data, vnode.events)
+        
+        vnode.el = el
+        
+        pop = False
 
-    if SIZER_STACK:
-        kw = vnode.data["sopt"] if "sopt" in vnode.data else {}
-        SIZER_STACK[-1].Add(el, **kw)
-    
-    if el.GetSizer():
-        pop = True
-        SIZER_STACK.append(el.GetSizer())
-    
-    for cvnode in vnode.children:
-        create_wtree(el, cvnode)
-    
-    el.Layout()
-    
-    if pop:
-        SIZER_STACK.pop(-1)
+        if SIZER_STACK:
+            kw = vnode.data["sopt"] if "sopt" in vnode.data else {}
+            SIZER_STACK[-1].Add(el, **kw)
+        
+        if el.GetSizer():
+            pop = True
+            SIZER_STACK.append(el.GetSizer())
+        
+        for cvnode in vnode.children:
+            create_wtree(el, cvnode)
+        
+        el.Layout()
+        
+        if pop:
+            SIZER_STACK.pop(-1)
     
 def to_camel_case(snake_str):
     components = snake_str.split('-')
@@ -138,11 +143,11 @@ def to_camel_case(snake_str):
 
 def is_native_element(tag):
     cTag = to_camel_case(tag)
-    return cTag in dir(wx)
+    return cTag in dir(wx) 
     
 def create_native_element(tag, data, children, events=None):
     cTag = to_camel_case(tag)
-    
+
     if is_native_element(tag):
         return VNode(tag, getattr(wx, cTag), data, children, events)
     else:
@@ -151,16 +156,21 @@ def create_native_element(tag, data, children, events=None):
         
         raise Exception(cTag)
  
-def create_component(context, tag, props, events):
-    component = context.components[tag](props=props)
-    return component.render()
+def create_assembly(context, tag, props, events):
+    from .reactor import ReactorAssembly
+    rod = context.rods[tag]
+    
+    component = ReactorComponent(**rod(), props=props, events=events, root=None)
+    component.bind(events)
+    
+    return VNode(tag, component, data, children, events) 
   
 def create_element(context, tag, data, children, events=None):
     if is_native_element(tag):
         node = create_native_element(tag, data, children, events)
     else:
-        node = create_component(context, tag, data, children, events)
-
+        node = create_assembly(context, tag, data, children, events)
+    
     return node
 
 def same_vnode(old, vnode):
@@ -203,31 +213,34 @@ def patch_vnode(old, vnode):
     if old == vnode:
         return
     
-    el = old.el
-    vnode.el = el
+    if old.is_component:
+        old.componentInstance.patch()
+    else:
+        el = old.el
+        vnode.el = el
 
-    unbind_el_events(el, old.events)
-    
-    # We don't patch the sizer
-    if "sizer" in vnode.data:
-        del vnode.data["sizer"]
+        unbind_el_events(el, old.events)
         
-    set_el_data(el, vnode.data)
-    bind_el_events(el, vnode.events)
-    
-    old_ch = old.children
-    new_ch = vnode.children
-    
-    pop = False
-    
-    if el.GetSizer():
-        pop = True
-        SIZER_STACK.append(el.GetSizer())
+        # We don't patch the sizer
+        if "sizer" in vnode.data:
+            del vnode.data["sizer"]
+            
+        set_el_data(el, vnode.data)
+        bind_el_events(el, vnode.events)
         
-    update_children(el, old_ch, new_ch)
-    
-    if pop:
-        SIZER_STACK.pop(-1)
+        old_ch = old.children
+        new_ch = vnode.children
+        
+        pop = False
+        
+        if el.GetSizer():
+            pop = True
+            SIZER_STACK.append(el.GetSizer())
+            
+        update_children(el, old_ch, new_ch)
+        
+        if pop:
+            SIZER_STACK.pop(-1)
         
 def patch(old, vnode):
     """ 
@@ -247,10 +260,17 @@ def patch(old, vnode):
     return vnode
         
 class VNode:
-    def __init__(self, tag, el_factory, data, children, events=None):        
+    def __init__(self, tag, el_or_component_factory, data, children, events=None):        
         self.tag = tag
         self.el = None
-        self.el_factory = el_factory
+        self.componentInstance = None
+        
+        if type(el_or_component_factory) is dict: 
+            self.component_factory = el_or_component_factory
+            self.is_component = True
+        else:
+            self.el_factory = el_or_component_factory
+            self.is_component = False
 
         self.events = {} if events is None else {**events}
         self.data = {**data}
