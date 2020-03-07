@@ -71,9 +71,19 @@ def assemble(rod_file):
             method_names.append(c.name)
     
     computed_pycode += "\ncomputed = {" + ", ".join(['"{key}": {key}'.format(key=m) for m in method_names]) + "}"
-    
     with open(os.path.join(dir, "computed.py"), "w") as f:
         f.write(computed_pycode)             
+ 
+    rods_pycode = get(content, "rods")
+    rods_names = []
+    for c in ast.iter_child_nodes(ast.parse(rods_pycode)):
+        if isinstance(c, ast.Assign):
+            rods_names.append(c.targets[0].id)
+    rods_pycode += "\nrods = {" + ", ".join(['"{key}": {key}'.format(key=m) for m in rods_names]) + "}"
+    with open(os.path.join(dir, "rods.py"), "w") as f:
+        f.write(rods_pycode)             
+
+    
     
     tpl = get(content, "template") 
     tpl_pycode = compile(tpl)

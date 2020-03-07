@@ -113,7 +113,7 @@ def create_wtree(parent_el, vnode):
     """
     if vnode.is_component:
         vnode.componentInstance.root = parent_el
-        vnode.mount()
+        vnode.componentInstance.mount()
     else:
         el = create_wel(parent_el, vnode.el_factory, vnode.data, vnode.events)
         
@@ -160,16 +160,18 @@ def create_assembly(context, tag, props, events):
     from .reactor import ReactorAssembly
     rod = context.rods[tag]
     
-    component = ReactorComponent(**rod(), props=props, events=events, root=None)
-    component.bind(events)
+    component = ReactorAssembly(**rod(), props=props, events=events, root=None)
     
-    return VNode(tag, component, data, children, events) 
+    node = VNode(tag, None, props, [], events) 
+    node.componentInstance = component
+    node.is_component = True
+    return node
   
 def create_element(context, tag, data, children, events=None):
     if is_native_element(tag):
         node = create_native_element(tag, data, children, events)
     else:
-        node = create_assembly(context, tag, data, children, events)
+        node = create_assembly(context, tag, data, events)
     
     return node
 
@@ -260,17 +262,13 @@ def patch(old, vnode):
     return vnode
         
 class VNode:
-    def __init__(self, tag, el_or_component_factory, data, children, events=None):        
+    def __init__(self, tag, el_factory_or_assembly, data, children, events=None):        
         self.tag = tag
         self.el = None
         self.componentInstance = None
-        
-        if type(el_or_component_factory) is dict: 
-            self.component_factory = el_or_component_factory
-            self.is_component = True
-        else:
-            self.el_factory = el_or_component_factory
-            self.is_component = False
+
+        self.el_factory = el_factory_or_assembly
+        self.is_component = False
 
         self.events = {} if events is None else {**events}
         self.data = {**data}

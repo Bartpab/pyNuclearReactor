@@ -31,7 +31,7 @@ class Computed:
         setattr(data, self.name, self.getter())
         
 class BaseReactor:
-    def __init__(self, template, data, computed, methods, root):
+    def __init__(self, template, data, computed, methods, rods, root):
         observe(self)
         
         self.bind_data(data)
@@ -46,6 +46,7 @@ class BaseReactor:
             setattr(self, name, functools.partial(method, self))
         
         self.events = []
+        self.rods = rods
         self.root = root
     
     def patch(self):
@@ -89,8 +90,8 @@ class BaseReactor:
         pass
 
 class ReactorAssembly(BaseReactor):
-    def __init__(self, props, events, template, data, methods, computed, root):
-        BaseReactor.__init__(self, template, data, computed, methods)
+    def __init__(self, props, events, template, data, methods, computed, rods, root):
+        BaseReactor.__init__(self, template, data, computed, methods, rods, root)
         
         self.events = {}
         
@@ -101,18 +102,19 @@ class ReactorAssembly(BaseReactor):
         for ev_name, callback in events:
             if ev_name not in self.events:
                 self.events[ev_name] =[] 
-            self.events[ev_name].append(callback)s   
+            self.events[ev_name].append(callback)
     
     def emit(self, event, args):
-        pass
+        if event in self.events:
+            [c(args) for c in self.events[event]]
         
 class Reactor(BaseReactor):
     def set(self, key, value):
         value = objectify(value)
         setattr(self, key, value)
 
-    def __init__(self, template, data, methods, computed, root):
-        BaseReactor.__init__(self, template, data, computed, methods, root)
+    def __init__(self, template, data, methods, computed, rods, root):
+        BaseReactor.__init__(self, template, data, computed, methods, rods, root)
 
     def nexTick(self, dt):
         Watcher.run_all()
