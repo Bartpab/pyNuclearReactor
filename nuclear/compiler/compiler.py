@@ -180,7 +180,7 @@ def c(ast_node, symbol_table, event_methods):
         return ""
     
 def compile(txt):
-    symbol_table = {"wx": [[]]}
+    symbol_table = {"wx": [[]], "False": [[]], "True": [[]]}
     event_methods = []
     ast = parse(txt)
     return c(ast, symbol_table, event_methods)

@@ -203,7 +203,10 @@ def update_children(parent_el, old_ch, new_ch):
     to_add = n_list[:]
     
     for to_r in to_remove:
-        to_r.el.Destroy()
+        if to_r.is_component:
+            to_r.componentInstance.node.el.Destroy()
+        else:
+            to_r.el.Destroy()
     
     for to_a in to_add:
         create_wtree(parent_el, to_a)

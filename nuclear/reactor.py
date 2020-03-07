@@ -99,7 +99,7 @@ class ReactorAssembly(BaseReactor):
         self.bind_events(events)
     
     def bind_events(self, events):
-        for ev_name, callback in events:
+        for ev_name, callback in events.items():
             if ev_name not in self.events:
                 self.events[ev_name] =[] 
             self.events[ev_name].append(callback)
