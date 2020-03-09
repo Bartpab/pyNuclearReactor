@@ -50,8 +50,11 @@ class ReactiveProperty:
         from .observe import observe        
         new_value = reactify(new_value)
         
-        if getter() == new_value:
-            return
+        try:        
+            if getter() == new_value:
+                return
+        except:
+            pass
         
         setter(new_value)
         self.ob_child = observe(new_value)
@@ -64,6 +67,9 @@ def defineReactiveProperty(obj, key, value):
 
 STACK = []
 def defineReactive(obj, key, value):   
+    if key == "__nuclear_props":
+        return
+    
     reactify(obj)
     
     if key in obj.__nuclear_props:

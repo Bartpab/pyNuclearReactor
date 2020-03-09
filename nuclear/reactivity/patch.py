@@ -1,11 +1,18 @@
 import types
 import functools
 
+class UnpatchableException(Exception):
+    pass
+
 def mutant_monkey_patch(obj):
     if hasattr(obj, '__nuclear_props'):
         return
+    
+    try:
+        obj.__nuclear_props = {}
+    except NotImplementedError():
+        raise UnpatchableException()
         
-    obj.__nuclear_props = {}
     base_cls = obj.__class__
     
     class Patch(base_cls):        
@@ -44,7 +51,7 @@ def mutant_monkey_patch(obj):
             finally:
                 base_setattr(self, key, value) 
     
-    obj.__class__ = type('Nuclear' + obj.__class__.__name__, (base_cls, Patch), {})
+    obj.__class__ = type('Nuclear' + obj.__class__.__name__, (Patch,), {})
 
 ##########################
 # Make a list observable #
@@ -69,7 +76,7 @@ def proxy_method(self, method_prop):
             ob.observe_list(args)
         
         ob.dep.notify()
-    
+        return result
     return proxy
   
 def dict_monkey_patch(ls):
