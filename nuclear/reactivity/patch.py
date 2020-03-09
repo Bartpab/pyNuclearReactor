@@ -44,7 +44,7 @@ def mutant_monkey_patch(obj):
             finally:
                 base_setattr(self, key, value) 
     
-    obj.__class__ = type('Nuclear' + obj.__class__.__name__, (Patch,), {})
+    obj.__class__ = type('Nuclear' + obj.__class__.__name__, (base_cls, Patch), {})
 
 ##########################
 # Make a list observable #
