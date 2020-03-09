@@ -1,75 +1,72 @@
 from .dep import Dep
 from .watcher import Watcher
 
-def reactifyObject(obj):
-    if hasattr(obj, '__accessors'):
-        return
-    
-    setattr(obj, '__accessors', {})
-    setattr(obj, '__data', {})
+from .patch import reactify
 
-def defineComputed(obj, key, fn):
-    from .observe import observe
-    from .augment import augment    
-    
-    def __compute__(d):
-        obj.__data[key]["val"] = fn(d)
-        obj.__data[key]['dep'].notify()
-    
-    obj.__data[key] = {
-        "dep": Dep(),
-        "w": Watcher(obj, __compute__)
-    }
-    
-    def __getter__(self):
-        self.__data[key]['dep'].depend()
-        if "val" not in obj.__data[key]:
-            obj.__data[key]["w"].get()
+class ComputedProperty:
+    def __init__(self, obj, fn):
+        self.fn = fn
+        self.obj = obj
         
-        return obj.__data[key]["val"] 
-    
-    def __setter__(self, newValue): 
-        pass
-    
-    obj.__accessors[key] = (__getter__, __setter__)
-    
-def defineReactiveProperty(obj, key, value):
-    from .observe import observe
-    from .augment import augment
-    
-    value = augment(value)
-    
-    obj.__data[key] = {
-        "dep": Dep(),
-        "ob_child": observe(value),
-        "val": value
-    }
-    
-    def __getter__(self):
-        self.__data[key]['dep'].depend()
-        if "ob_child" in self.__data[key] and self.__data[key]['ob_child']:
-            self.__data[key]['ob_child'].dep.depend()
+        self.dep = Dep()
+        self.w = Watcher(obj, self.compute)
+        self.init = True
         
-        return self.__data[key]['val']
+    def compute(self, data):
+        self.value = self.fn(data)
+        self.dep.notify()
     
-    def __setter__(self, newValue): 
-        newValue = augment(newValue)
+    def get(self):
+        self.dep.depend()
         
-        if self.__data[key]['val'] == newValue:
+        if self.init:
+            self.w.get()
+            self.init = False
+        
+        return self.value
+     
+    def set(self):
+        raise Exception("Cannot modify a computed value.")
+        
+def defineComputed(obj, key, fn):      
+    obj.__nuclear_props[key] = ComputedProperty(obj, fn)
+    
+class ReactiveProperty:
+    def __init__(self, value):
+        from .observe import observe
+        self.dep = Dep()
+        self.ob_child = observe(value)
+     
+    def get(self, getter):
+        self.dep.depend()
+
+        if self.ob_child:
+            self.ob_child.dep.depend()
+        
+        value = getter()
+        return value
+    
+    def set(self, new_value, getter, setter):
+        from .observe import observe        
+        new_value = reactify(new_value)
+        
+        if getter() == new_value:
             return
-            
-        self.__data[key]['val'] = newValue
-        self.__data[key]['ob_child'] = observe(newValue)
         
-        self.__data[key]['dep'].notify()
-    
-    obj.__accessors[key] = (__getter__, __setter__) 
+        setter(new_value)
+        self.ob_child = observe(new_value)
+        self.dep.notify()
+
+def defineReactiveProperty(obj, key, value):
+    value = reactify(value)
+    obj.__nuclear_props[key] = ReactiveProperty(value) 
+    setattr(obj, key, value)
 
 STACK = []
 def defineReactive(obj, key, value):   
-    reactifyObject(obj)
+    reactify(obj)
     
-    if key in obj.__accessors:
+    if key in obj.__nuclear_props:
         return
     
     if id(value) in STACK:

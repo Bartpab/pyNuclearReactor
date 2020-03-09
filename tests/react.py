@@ -1,8 +1,8 @@
 import sys 
 sys.path.append("..")
 
-from nuclear.reactivity import Dep, BaseWatcher, observe, Observable
-from nuclear.reactivity import augment
+from nuclear.reactivity import Dep, BaseWatcher, observe
+from nuclear.reactivity import reactify, inspect_nuclear_props
 
 from unittest.mock import MagicMock
 import unittest
@@ -22,6 +22,8 @@ class TestReactivity(unittest.TestCase):
         
         # After observe call, o should have __ob__ flag
         self.assertTrue(hasattr(o, '__ob__'))
+        self.assertTrue(hasattr(o, '__nuclear_props'))
+        self.assertTrue("a" in getattr(o, "__nuclear_props"))
         
         # Create our watcher.
         w = BaseWatcher()
@@ -29,11 +31,12 @@ class TestReactivity(unittest.TestCase):
         
         # Add the watcher to the global Dep target tracker.
         Dep.push_target(w)
-        
         o.a # Get call, this should add o.a to the targetted watcher (__target__)
-        
         Dep.pop_target()
         
+        self.assertEqual(len(inspect_nuclear_props(o)["a"].dep.subs), 1)
+        sub = inspect_nuclear_props(o)["a"].dep.subs[0]
+        self.assertEqual(w, sub)
         self.assertEqual(len(w.deps), 1) # The watcher should have o.a as dep
         
         o.a = 3 # Set call, should trigger watcher update method

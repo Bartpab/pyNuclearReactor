@@ -1,54 +1,22 @@
-import types
-
+from .patch import reactify
 from .observer import Observer
 
-class Observable(object):
-    def __getattribute__(self, key):
-        try:
-            accessors = object.__getattribute__(self, '__accessors')
-            
-            if accessors and key in accessors:
-                return accessors[key][0](self) # Getter
-        
-        except AttributeError:
-            return object.__getattribute__(self, key)
-        
-        return object.__getattribute__(self, key)
-    def __setattr__(self, key, value):
-        if key is not '__accessors' and hasattr(self, '__accessors'):
-            accessors = object.__getattribute__(self, '__accessors')
-            if key in accessors:
-                accessors[key][1](self, value) # Setter 
-                return
-
-        object.__setattr__(self, key, value)   
-
-class ObservableList(list, Observable):
-    def __init__(self, ls):
-        self.extend(ls)
-
-def is_observable(value):
-    if type(value) in [list, str]: 
-        return False
-
-    return True
-
+STACK = []
 def observe(value, restrain=None):
-    from .augment import augment
+    if value in STACK:
+        return
     
-    # Some cTypes cannot be directly observable
-    if not is_observable(value):
-        return None
+    STACK.append(value)
+    value = reactify(value)
+    
+    try:
+        if hasattr(value, '__ob__') and type(value.__ob__) is Observer:
+            ob = value.__ob__
+        else:
+            ob = Observer(value, restrain=restrain)
         
-    if not isinstance(value, Observable):
-        value = augment(value)
+        STACK.pop(-1)
+        return ob
     
-    if not isinstance(value, Observable):
+    except AttributeError:
         return None
-    
-    if hasattr(value, '__ob__') and type(value.__ob__) is Observer:
-        ob = value.__ob__
-    else:
-        ob = Observer(value, restrain=restrain)
-
-    return ob

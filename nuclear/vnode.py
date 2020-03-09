@@ -1,6 +1,8 @@
 import wx
 import functools
 
+from .widgets import Tree
+
 def helpers(h, self):
     def _h(tag, data, children, events=None):
         return h(self, tag, data, children, events)    
@@ -21,51 +23,11 @@ def helpers(h, self):
     
     return _h, _it, _if, _f
 
-class Tree(wx.TreeCtrl):
-    @staticmethod
-    def default_walker(self, node):
-        if not hasattr(node, "items"):
-            return []
-        
-        items = []
-        
-        for key, value in node.items():
-            if not hasattr(value, "items"):
-                items.append((key, value, False))
-            else:
-                items.append((key, value, True))
-        
-        return items
-        
-    def __init__(self, parent, id, pos, size, style):
-        wx.TreeCtrl.__init__(self, parent, id, pos, size, style)    
-    
-    def SetWalker(self, walker):
-        self.walker = walker
-    
-    def rec_tree(self, node, tree_node=None):
-        for key, value, is_node in self.walker(tree): 
-            if tree_node is None:
-                if not is_node:
-                    ctree_node = self.AddRoot(key + ": " +value)
-                else:
-                    ctree_node = self.AddRoot(key)
-                    self.rec_tree(value, ctree_node)
-            else:
-                if not is_node:
-                    ctree_node = self.AppendItem(tree_node, key)
-                    self.rec_tree(value, ctree_node)
-                else:
-                    self.SetPyData(tree_node, (key, value))
-                    
-    def SetTree(self, tree):
-        self.rec_tree(tree)
-
 def set_el_data(el, data):
     for key, value in data.items():
-        if key in ("sopt",):
+        if key in ("sopt", "key"):
             continue
-            
+        
         wMethName = "Set" + key[0].upper() + key[1:]
         wMeth = getattr(el, wMethName)
         wMeth(value)
@@ -112,11 +74,12 @@ def create_wtree(parent_el, vnode):
         Recursively create the widget tree
     """
     if vnode.is_component:
-        vnode.componentInstance.root = parent_el
-        vnode.componentInstance.mount()
+        vnode.component_instance.root = parent_el
+        vnode.component_instance.mount()
+        parent_el.Layout()
+    
     else:
         el = create_wel(parent_el, vnode.el_factory, vnode.data, vnode.events)
-        
         vnode.el = el
         
         pop = False
@@ -150,42 +113,39 @@ def create_native_element(tag, data, children, events=None):
 
     if is_native_element(tag):
         return VNode(tag, getattr(wx, cTag), data, children, events)
-    else:
-        if cTag == "Tree":
-            return VNode(tag, Tree, data, children, events) 
-        
+    else:       
         raise Exception(cTag)
  
 def create_assembly(context, tag, props, events):
     from .reactor import ReactorAssembly
-    rod = context.rods[tag]
-    
-    component = ReactorAssembly(**rod(), props=props, events=events, root=None)
-    
+    rod = context.rod(tag)
+    component = ReactorAssembly(**rod(), props=props, events=events, globals=context.globals, root=None)
     node = VNode(tag, None, props, [], events) 
-    node.componentInstance = component
+    node.component_instance = component
     node.is_component = True
     return node
   
 def create_element(context, tag, data, children, events=None):
     if is_native_element(tag):
         node = create_native_element(tag, data, children, events)
+    elif tag == "tree":
+        return VNode(tag, Tree, data, children, events) 
     else:
         node = create_assembly(context, tag, data, events)
-    
     return node
 
 def same_vnode(old, vnode):
     same_tag  = old.tag == vnode.tag
-    same_key  = old.key == vnode.key
+    same_id  = old.id == vnode.id
     
-    return same_tag and same_key
+    return same_tag and same_id
 
 def update_children(parent_el, old_ch, new_ch):
     to_remove = []
     to_patch = []
     
     n_list = new_ch[:]
+    
     for o in old_ch:
         f = None
         for n in n_list:
@@ -201,25 +161,23 @@ def update_children(parent_el, old_ch, new_ch):
     
     # What's left is new
     to_add = n_list[:]
-    
+
     for to_r in to_remove:
-        if to_r.is_component:
-            to_r.componentInstance.node.el.Destroy()
-        else:
-            to_r.el.Destroy()
+        to_r.destroy()
     
     for to_a in to_add:
         create_wtree(parent_el, to_a)
     
     for o, v in to_patch:
         patch(o, v)
-        
+  
 def patch_vnode(old, vnode):
     if old == vnode:
         return
     
     if old.is_component:
-        old.componentInstance.patch()
+        old.component_instance.patch()
+    
     else:
         el = old.el
         vnode.el = el
@@ -251,24 +209,32 @@ def patch(old, vnode):
     """ 
         Check if vnode needs to be patched by comparing it to the new version
     """
+    # The component is similar, we need to transfer the old node to the new without breaking the node chain
     if same_vnode(old, vnode):
         patch_vnode(old, vnode)
     
-    else:
-        o_el = old.el
-        p_el = o_el.GetParent()
-        o_el.Destroy()   
+    # The component change drastically, we need to swap it and destory the old one
+    elif old.is_component:
+        p_el = old.get_parent_el()
+        old.destroy()  
         create_wtree(p_el, vnode)
     
-    vnode.el.Layout()
+    # A wx node has changed, we need to swap it and destory the old one
+    else:
+        p_el = old.get_parent_el()
+        old.destroy() 
+        create_wtree(p_el, vnode)
     
+    for el in vnode.get_els():
+        el.Layout()
+
     return vnode
         
 class VNode:
     def __init__(self, tag, el_factory_or_assembly, data, children, events=None):        
         self.tag = tag
         self.el = None
-        self.componentInstance = None
+        self.component_instance = None
 
         self.el_factory = el_factory_or_assembly
         self.is_component = False
@@ -280,11 +246,47 @@ class VNode:
         self.children = []
         self.set_children(children)
         
-        self.key = data[key] if "key" in data else None
+        self.key = data["key"] if "key" in data else None
+        self.id = 1
+    
+    def get_els(self):
+        s = [self]
+        els = []
         
+        while len(s):
+            e = s.pop(0)
+            if e.is_component:
+                s.append(e.component_instance.node)
+            else:
+                els.append(e.el)
+        return els
+    
+    def get_parent_el(self):
+        if self.is_component:
+            return self.component_instance.root
+        else:
+            return self.el.GetParent()
+    
+    def destroy(self):
+        self.destroy_els()
+    
+    def destroy_els(self):
+        for el in self.get_els():
+            if el:
+                el.Destroy()
+    
+    def get(self, key):
+        s = [self]
+        
+        while len(s):
+            e = s.pop(0)
+            if e.key == key:
+                return e
+            s.extend(e.children)
+    
     def set_children(self, children):
         self.children = []
         for child in children:
             child.parent = self
             self.children.append(child)
-            child.key = len(self.children)
+            child.id = len(self.children)

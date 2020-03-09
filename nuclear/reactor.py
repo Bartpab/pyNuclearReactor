@@ -31,11 +31,14 @@ class Computed:
         setattr(data, self.name, self.getter())
         
 class BaseReactor:
-    def __init__(self, template, data, computed, methods, rods, root):
+    def __init__(self, template, data, computed, methods, rods, globals, root):
         observe(self)
         
         self.bind_data(data)
+        self.bind_data(globals)
         self.bind_computed(computed)
+        
+        self.globals = globals
         
         self.w = Watcher(self, lambda data: self.render())
         
@@ -48,6 +51,8 @@ class BaseReactor:
         self.events = []
         self.rods = rods
         self.root = root
+        
+        self.created()
     
     def patch(self):
         self.render()
@@ -60,6 +65,7 @@ class BaseReactor:
         newNode = tpl(create_element, self)
         
         open_wtree(self.root)
+        
         if self.node is None:
             self.node = newNode
             create_wtree(self.root, self.node)
@@ -85,17 +91,35 @@ class BaseReactor:
         self.w.get()
         self.mounted()
     
+    def rod(self, key):
+        if key in self.rods:
+            return self.rods[key]
+        else:
+            return self.get_rod(key)
+
     # Lifecycle
+    def get_rod(self, key):
+        pass
+        
+    def created(self):
+        pass
+        
     def mounted(self):
         pass
-
+    
+    def destroy(self):
+        if self.node and self.node.el:
+            self.node.el.Destroy()
+    
 class ReactorAssembly(BaseReactor):
-    def __init__(self, props, events, template, data, methods, computed, rods, root):
-        BaseReactor.__init__(self, template, data, computed, methods, rods, root)
+    def __init__(self, props, events, template, data, methods, computed, rods, globals, root):
+        BaseReactor.__init__(self, template, data, computed, methods, rods, globals, root)
         
         self.events = {}
         
         self.bind_data(props)
+        self.bind_data(globals)
+        
         self.bind_events(events)
     
     def bind_events(self, events):
@@ -113,8 +137,11 @@ class Reactor(BaseReactor):
         value = objectify(value)
         setattr(self, key, value)
 
-    def __init__(self, template, data, methods, computed, rods, root):
-        BaseReactor.__init__(self, template, data, computed, methods, rods, root)
+    def __init__(self, template, data, methods, computed, rods, root, globals=None):
+        if not globals:
+            globals = {}
+            
+        BaseReactor.__init__(self, template, data, computed, methods, rods, globals, root)
 
     def nexTick(self, dt):
         Watcher.run_all()
