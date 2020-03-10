@@ -1,7 +1,7 @@
 from .dep import Dep
 from .watcher import Watcher
 
-from .patch import reactify
+from .mutagen import mutate, define_mutated_property
 
 class ComputedProperty:
     def __init__(self, obj, fn):
@@ -29,8 +29,7 @@ class ComputedProperty:
         raise Exception("Cannot modify a computed value.")
         
 def defineComputed(obj, key, fn):     
-    reactify(obj)
-    obj.__nuclear_props[key] = ComputedProperty(obj, fn)
+    define_mutated_property(obj, key, ComputedProperty(obj, fn)) 
     
 class ReactiveProperty:
     def __init__(self, value):
@@ -50,30 +49,32 @@ class ReactiveProperty:
     
     def set(self, key, new_value, getter, setter):
         from .observe import observe        
-        new_value = reactify(new_value)
+        new_value = mutate(new_value)
+        
+        if hasattr(self, key) and id(getter()) == id(new_value):
+            return
 
         setter(new_value)
         self.ob_child = observe(new_value)
         self.dep.notify()
 
 def defineReactiveProperty(obj, key, value):
-    value = reactify(value)
-    obj.__nuclear_props[key] = ReactiveProperty(value) 
+    # Mutate the value
+    value = mutate(value)
+    # Register a nuclear property
+    define_mutated_property(obj, key, ReactiveProperty(value)) 
+    # Set the value
     setattr(obj, key, value)
     
 STACK = []
 def defineReactive(obj, key, value):   
-    if key == "__nuclear_props":
-        return
-    
-    reactify(obj)
+    mutate(obj)
     
     if key in obj.__nuclear_props:
         return
     
     if id(value) in STACK:
         return
-    
     STACK.append(id(value))
     defineReactiveProperty(obj, key, value)
     STACK.pop(-1)

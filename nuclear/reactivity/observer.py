@@ -16,12 +16,17 @@ class Observer:
 
     def observe_list(self, ls):
         from .observe import observe
+        
         for item in ls:
             observe(item)
-
+    
     def walk(self, obj, restrain=None):
         attrs = {**obj.__dict__}
-        for key, value in attrs.items():   
+        
+        if "__nuclear_props" in attrs:
+            del attrs["__nuclear_props"]
+        
+        for key, value in attrs.items():  
             if restrain:
                 if key in restrain:
                     defineReactive(obj, key, value)
