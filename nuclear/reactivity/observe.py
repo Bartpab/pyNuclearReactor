@@ -12,8 +12,10 @@ def observe(value, restrain=None):
     try:
         if hasattr(value, '__ob__') and type(value.__ob__) is Observer:
             ob = value.__ob__
+        
         else:
             ob = Observer(value, restrain=restrain)
+        
         return ob
     
     except AttributeError:

@@ -13,7 +13,7 @@ class Observer:
             self.walk(value, restrain)
         
         value.__ob__ = self
-    
+
     def observe_list(self, ls):
         from .observe import observe
         for item in ls:

@@ -1,8 +1,9 @@
 import sys 
 sys.path.append("..")
 
-from nuclear.reactivity import Dep, BaseWatcher, observe
+from nuclear.reactivity import Dep, BaseWatcher, Watcher, observe
 from nuclear.reactivity import reactify, inspect_nuclear_props
+from nuclear.reactivity import defineComputed
 
 from unittest.mock import MagicMock
 import unittest
@@ -38,7 +39,7 @@ class TestReactivity(unittest.TestCase):
         sub = inspect_nuclear_props(o)["a"].dep.subs[0]
         self.assertEqual(w, sub)
         self.assertEqual(len(w.deps), 1) # The watcher should have o.a as dep
-        
+        self.assertEqual(w.update.call_count, 0)
         o.a = 3 # Set call, should trigger watcher update method
         
         self.assertEqual(w.update.call_count, 1)
@@ -50,6 +51,8 @@ class TestReactivity(unittest.TestCase):
         # After observe call, a should have __ob__ flag
         observe(o)
         
+        self.assertTrue("a" in inspect_nuclear_props(o))
+        self.assertEqual(o.a.__class__.__name__, "NuclearObservableList")
         self.assertTrue(hasattr(o.a, '__ob__'))
        
        # Create our watcher.
@@ -57,13 +60,35 @@ class TestReactivity(unittest.TestCase):
         w.update = MagicMock()
         
         # Add the watcher to the global Dep target tracker.
-        Dep.push_target(w) 
+        Dep.push_target(w)
         o.a 
         Dep.pop_target()
         
         self.assertEqual(len(w.deps), 2) # The watcher should have o, o.a as dep
         o.a.append(2)
         self.assertEqual(w.update.call_count, 1)
+    
+    def test_watch_computed(self):
+        o = cro(a=1)
+        self.assertTrue(observe(o))
+        
+        # Define a computed value
+        defineComputed(o, "b", lambda o: o.a + 1)
+        
+        # Check that b is a computed value
+        self.assertTrue(inspect_nuclear_props(o)["b"].__class__.__name__, "ComputedProperty")
+
+        o.b
+        o.a = 2
+        
+        a_dep       = inspect_nuclear_props(o)["a"].dep
+        b_watcher   = inspect_nuclear_props(o)["b"].watcher
+        
+        self.assertEqual(b_watcher.deps[0], a_dep)
+    
+        Watcher.run_all()
+        
+        self.assertEqual(o.b, 3)
         
 if __name__ == '__main__':
     unittest.main()

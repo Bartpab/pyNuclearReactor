@@ -9,26 +9,27 @@ class ComputedProperty:
         self.obj = obj
         
         self.dep = Dep()
-        self.w = Watcher(obj, self.compute)
+        self.watcher = Watcher(obj, lambda d: self.compute(d))
         self.init = True
         
     def compute(self, data):
         self.value = self.fn(data)
         self.dep.notify()
     
-    def get(self):
+    def get(self, getter):
         self.dep.depend()
         
         if self.init:
-            self.w.get()
+            self.watcher.get()
             self.init = False
         
         return self.value
      
-    def set(self):
+    def set(self, new_value, getter, setter):
         raise Exception("Cannot modify a computed value.")
         
-def defineComputed(obj, key, fn):      
+def defineComputed(obj, key, fn):     
+    reactify(obj)
     obj.__nuclear_props[key] = ComputedProperty(obj, fn)
     
 class ReactiveProperty:
@@ -39,23 +40,18 @@ class ReactiveProperty:
      
     def get(self, getter):
         self.dep.depend()
-
+        
         if self.ob_child:
             self.ob_child.dep.depend()
         
         value = getter()
+        
         return value
     
-    def set(self, new_value, getter, setter):
+    def set(self, key, new_value, getter, setter):
         from .observe import observe        
         new_value = reactify(new_value)
-        
-        try:        
-            if getter() == new_value:
-                return
-        except:
-            pass
-        
+
         setter(new_value)
         self.ob_child = observe(new_value)
         self.dep.notify()
@@ -64,7 +60,7 @@ def defineReactiveProperty(obj, key, value):
     value = reactify(value)
     obj.__nuclear_props[key] = ReactiveProperty(value) 
     setattr(obj, key, value)
-
+    
 STACK = []
 def defineReactive(obj, key, value):   
     if key == "__nuclear_props":

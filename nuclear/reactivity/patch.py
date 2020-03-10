@@ -20,16 +20,14 @@ def mutant_monkey_patch(obj):
             base_getattr = base_cls.__getattribute__
             try:
                 properties = base_getattr(self, '__nuclear_props')
-                if properties and key in properties:
+                if key in properties:
                     return properties[key].get(
                        getter=functools.partial(base_getattr, self, key)
                     )
-            
-            except AttributeError:
+            except AttributeError as e:
                 return base_getattr(self, key)
-            
-            finally:
-                return base_getattr(self, key)
+
+            return base_getattr(self, key)
             
         def __setattr__(self, key, value):
             base_getattr = base_cls.__getattribute__
@@ -39,17 +37,17 @@ def mutant_monkey_patch(obj):
                 properties = base_getattr(self, '__nuclear_props')
                 if properties and key in properties:
                     properties[key].set(
+                        key,
                         value, 
                         getter=functools.partial(base_getattr, self, key), 
                         setter=functools.partial(base_setattr, self, key)
                     )
                     return
             
-            except AttributeError:
+            except AttributeError as e:
                 base_setattr(self, key, value) 
-            
-            finally:
-                base_setattr(self, key, value) 
+
+            base_setattr(self, key, value) 
     
     obj.__class__ = type('Nuclear' + obj.__class__.__name__, (Patch,), {})
 
