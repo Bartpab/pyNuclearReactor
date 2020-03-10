@@ -44,7 +44,6 @@ class ReactiveProperty:
             self.ob_child.dep.depend()
         
         value = getter()
-        
         return value
     
     def set(self, key, new_value, getter, setter):

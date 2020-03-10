@@ -1,5 +1,7 @@
 from .dep import Dep
 from .react import defineReactive
+import inspect
+import sqlalchemy
 
 class Observer:
     def __init__(self, value, restrain=None):
@@ -21,14 +23,14 @@ class Observer:
             observe(item)
     
     def walk(self, obj, restrain=None):
-        attrs = {**obj.__dict__}
-        
-        if "__nuclear_props" in attrs:
-            del attrs["__nuclear_props"]
-        
-        for key, value in attrs.items():  
-            if restrain:
-                if key in restrain:
+        for key, value in inspect.getmembers(obj):  
+            if (key.startswith("__") and key.endswith("__")) or key in ("__nuclear_props",):
+                continue
+            try:
+                if restrain:
+                    if key in restrain:
+                        defineReactive(obj, key, value)
+                else:
                     defineReactive(obj, key, value)
-            else:
-                defineReactive(obj, key, value)
+            except Exception as e:
+                pass

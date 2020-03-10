@@ -50,7 +50,6 @@ class TestReactivity(unittest.TestCase):
         w.deps = []
     
     def test_watch_array_mutation(self):
-        
         o = cro(a=[1,2])
         
         # After observe call, a should have __ob__ flag
@@ -80,7 +79,6 @@ class TestReactivity(unittest.TestCase):
         pass
         
     def test_watch_computed(self):
-        
         o = cro(a=1)
         self.assertTrue(observe(o))
         

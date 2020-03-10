@@ -1,63 +1,86 @@
 import types
 import functools
+from inspect import getfullargspec
 
 _monkey_patch_index = 0
 _not_set            = object ()
 
-def mutant_patch_prop(prop, name):
-    if name.startswith("$__nuclear_prop_"):
-        return
-        
-    global _monkey_patch_index, _not_set
+def is_property(prop):
+    if not hasattr(prop, '__get__'):
+        return False
+
+    if not hasattr(prop, '__set__'):
+        return False
     
-    attr_name = '$__nuclear_prop_{}'.format (_monkey_patch_index)
-    _monkey_patch_index += 1
+    return True
+
+class MutantProperty:
+    def __init__(self, prop, name):
+        self.prop = prop
+        self.name = name
     
-    if prop is None:
-        base_getter = lambda self: getattr(self, attr_name)
-        base_setter = lambda self, value: setattr(self, attr_name, value)
+    def __get__(self, obj, objtype=None):
+        name = self.name
+        prop = self.prop
         
-    else:
-        # Non-data descriptor...
-        if not hasattr(prop, '__set__'):
-            return
-            
-        base_getter = prop.__get__
-        base_setter = prop.__set__
+        if prop is None:
+            def fbase_getter():
+                return obj.__dict__[name]
+            base_getter = fbase_getter
         
-    def getter (self):
-        if hasattr(self, '__nuclear_props'):
-            properties = self.__nuclear_props
+        else:
+            base_getter = functools.partial(prop.__get__, obj, objtype)
+        
+        if hasattr(obj, '__nuclear_props'):
+            properties = getattr(obj, "__nuclear_props")
             if name in properties:
                 return properties[name].get(
-                   getter=functools.partial(base_getter, self)
+                   getter=base_getter
                 )
-
-        return base_getter(self)
-
-    def setter (self, value):
-        if hasattr(self, '__nuclear_props'):
-            properties = self.__nuclear_props
+        
+        return base_getter()
+        
+    def __set__(self, obj, value):
+        name = self.name
+        prop = self.prop
+        
+        if prop is None:
+            def fbase_getter(self):
+                return obj.__dict__[name]
+            
+            def fbase_setter(self, value):
+                obj.__dict__[name] = value
+            
+            base_getter = fbase_getter
+            base_setter = fbase_setter
+        else:
+            base_getter = functools.partial(prop.__get__, obj, None)
+            base_setter = functools.partial(prop.__get__, obj)
+        
+        if hasattr(obj, '__nuclear_props'):
+            properties = getattr(obj, "__nuclear_props")
             if properties and name in properties:
                 properties[name].set(
                     name,
                     value, 
-                    getter=functools.partial(base_getter, self), 
-                    setter=functools.partial(base_setter, self)
+                    getter=base_getter, 
+                    setter=base_setter
                 )
                 return
-        base_setter(self, value)
-
-    return property (getter, setter)    
+        
+        base_setter(self, value) 
+        
+def mutant_patch_prop(prop, name):
+       return MutantProperty (prop, name)    
 
 def define_mutated_property(obj, key, desc):
     if key in ("__nuclear_props",):
         return
     
     # Patch, if necessary, the object's class property
-    mutant_monkey_patch(obj, key)
-    # Add the nuclear prop
-    obj.__nuclear_props[key] =  desc
+    if mutant_monkey_patch(obj, key):
+        # Add the nuclear prop
+        obj.__nuclear_props[key] =  desc
 
 def has_mutated_prop(base_cls, prop_name):
     return hasattr(base_cls, '__nuclear_%s' % prop_name)
@@ -74,17 +97,20 @@ def mutant_monkey_patch(obj, prop_name):
     
     # Already been patched
     if has_mutated_prop(obj, prop_name):
-        return
+        return True
+    
+    prop = None
     
     if hasattr(base_cls, prop_name):
         prop = getattr(base_cls, prop_name)
-        if type(prop) is types.FunctionType:
-            prop = None
+        if not is_property(prop):
+            return False      
     else:
         prop = None
-    
+        
     setattr(base_cls, prop_name, mutant_patch_prop(prop, prop_name))
     flag_mutated_prop(base_cls, prop_name)
+    return True
     
 def assert_nuclear_mutant(obj):
     if not hasattr(obj, "__nuclear_props"):
@@ -93,7 +119,7 @@ def assert_nuclear_mutant(obj):
 ##########################
 # Make a list observable #
 ##########################
-class ObservableList(list, object):
+class ObservableList(list):
     def __init__(self, ls):
         for item in ls:
             self.append(item)
@@ -104,7 +130,7 @@ class ObservableList(list, object):
         observe(item)
         super().append(item)
 
-class ObservableDict(dict, object):
+class ObservableDict(dict):
     def __init__(self, d):
         self.update(d)    
         
@@ -174,5 +200,7 @@ def mutate(value):
         dict_monkey_patch(obs_dict)
         return obs_dict
     else:
-        assert_nuclear_mutant(value)
-        return value  
+        try:
+            assert_nuclear_mutant(value)
+        finally:
+            return value  
