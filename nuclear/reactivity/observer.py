@@ -6,7 +6,7 @@ import sqlalchemy
 class Observer:
     def __init__(self, value, restrain=None):
         self.value = value
-        self.dep = Dep()
+        self.dep = Dep(src=value)
     
         if issubclass(type(value), list):
             self.observe_list(value)

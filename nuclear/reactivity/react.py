@@ -32,9 +32,9 @@ def defineComputed(obj, key, fn):
     define_mutated_property(obj, key, ComputedProperty(obj, fn)) 
     
 class ReactiveProperty:
-    def __init__(self, value):
+    def __init__(self, value, **kw):
         from .observe import observe
-        self.dep        = Dep()
+        self.dep        = Dep(**kw)
         self.ob_child   = observe(value)
      
     def get(self, getter):
@@ -65,7 +65,7 @@ def defineReactiveProperty(obj, key, value):
     # Mutate the value
     value = mutate(value)
     # Register a nuclear property
-    define_mutated_property(obj, key, ReactiveProperty(value)) 
+    define_mutated_property(obj, key, ReactiveProperty(value, key=key, src=obj)) 
     # Set the value
     setattr(obj, key, value)
     

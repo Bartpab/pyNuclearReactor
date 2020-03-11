@@ -32,9 +32,12 @@ class Computed:
     def update(self, data):
         setattr(data, self.name, self.getter())
         
+from copy import copy
+
 class BaseReactor:
     def __init__(self, template, data, computed, methods, rods, globals, root):
         observe(self)
+        self.data = {}
         
         self.bind_data(data)
         self.bind_data(globals)
@@ -49,7 +52,7 @@ class BaseReactor:
         
         for name, method in methods.items():
             setattr(self, name, functools.partial(method, self))
-        
+            
         self.events = []
         self.rods = rods
         self.root = root
@@ -89,6 +92,7 @@ class BaseReactor:
         self.events.append((event_name, args))
         
     def bind_data(self, data):
+        self.data.update(data)
         for k, v in data.items():
             defineReactive(self, k, v)
         
@@ -127,15 +131,14 @@ class BaseReactor:
             self.node = None
         
         self.destroyed()
+        
 class ReactorAssembly(BaseReactor):
     def __init__(self, props, events, template, data, methods, computed, rods, globals, root):
-        BaseReactor.__init__(self, template, data, computed, methods, rods, globals, root)
+        data_and_props = {**data}
+        data_and_props.update(props)
         
+        BaseReactor.__init__(self, template, data_and_props, computed, methods, rods, globals, root)
         self.events = {}
-        
-        self.bind_data(props)
-        self.bind_data(globals)
-        
         self.bind_events(events)
     
     def bind_events(self, events):

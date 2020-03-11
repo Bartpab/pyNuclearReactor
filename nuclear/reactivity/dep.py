@@ -17,11 +17,12 @@ class Dep:
             return Dep.__target_stack__[-1]
         return None
 
-    def __init__(self):
+    def __init__(self, **kw):
         global LAST_UID
         LAST_UID += 1
         self.id = LAST_UID
         self.subs = []
+        self.kw = kw
     
     def sub(self, sub):
         self.subs.append(sub)
@@ -35,4 +36,4 @@ class Dep:
     
     def notify(self):
         for sub in self.subs:
-            sub.update()
+            sub.update(**self.kw)

@@ -61,7 +61,7 @@ class VNode:
     
     def same(self, other):
         same_tag  = self.tag == other.tag
-        same_id  = self.id == other.id
+        same_id  = self.id == other.id        
         return same_tag and same_id
     
     def destroy(self):
@@ -81,8 +81,11 @@ class AssemblyVNode(VNode):
         self.component_instance.mount()
     
     def patch_from(self, other, el_contexts): 
-        pass
-    
+        self.component_instance.destroy()
+        self.component_instance = other.component_instance
+        self.component_instance.root = self.get_parent_el()
+        self.component_instance.mount()       
+
     def get_el(self):
         return self.parent_el
     
@@ -164,7 +167,7 @@ def patch(old, new, el_contexts=None):
     """
     if not el_contexts:
         el_contexts = create_el_contexts(old)
-        
+
     if old.same(new):
         old.patch_from(new, el_contexts)
         return old

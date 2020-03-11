@@ -1,11 +1,27 @@
 from .reactivity import observe, defineComputed, defineReactive
 import functools
 
+class StatePtr:
+    def __init__(self, _state):
+        self._state = _state
+    
+    def __copy__(self):
+        return StatePtr(self._state)
+    
+    def map_getter(self, dest, key, dest_name=None):
+        self._state.map_getter(dest, key, dest_name)
+    
+    def map_action(self, dest, key, dest_name=None):
+        self._state.map_action(dest, key, dest_name)
+        
 class State:
     def __init__(self):
         self.actions = {}
         observe(self)
-
+    
+    def __copy__(self):
+        return StatePtr(self)
+        
     def define(self, key, value):
         defineReactive(self, key, value)
 

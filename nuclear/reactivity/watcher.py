@@ -78,7 +78,7 @@ class Watcher(BaseWatcher):
         if self.cb:
             self.cb(value, old_value)        
     
-    def update(self):
+    def update(self, **kw):
         Watcher.add(self)
     
     def destroy(self):

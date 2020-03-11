@@ -196,6 +196,7 @@ def mutate(value):
         return obs_ls
     
     elif type(value) is dict:
+        return value # Cannot patch yet
         obs_dict = ObservableDict(value)
         assert_nuclear_mutant(obs_dict)
         dict_monkey_patch(obs_dict)
