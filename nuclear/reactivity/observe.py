@@ -3,10 +3,6 @@ from .observer import Observer
 
 STACK = []
 def observe(value, restrain=None):
-    if id(value) in STACK:
-        return
-        
-    STACK.append(id(value))
     value = mutate(value)
 
     if not hasattr(value, '__nuclear_props'):
@@ -16,8 +12,6 @@ def observe(value, restrain=None):
         ob = value.__ob__
     else:
         ob = Observer(value, restrain=restrain)
-    
-    STACK.pop(-1)
     
     return ob
         

@@ -19,18 +19,19 @@ class MutantProperty:
         self.prop = prop
         self.name = name
     
-    def __get__(self, obj, objtype=None):
+    def __get__(self, obj, objtype=None):           
         name = self.name
         prop = self.prop
         
         if prop is None:
-            def fbase_getter():
+            def fbase_getter(self, obj):
                 return obj.__dict__[name]
-            base_getter = fbase_getter
+            
+            base_getter = functools.partial(fbase_getter, self, obj)
         
         else:
             base_getter = functools.partial(prop.__get__, obj, objtype)
-        
+                                
         if hasattr(obj, '__nuclear_props'):
             properties = getattr(obj, "__nuclear_props")
             if name in properties:
@@ -45,17 +46,17 @@ class MutantProperty:
         prop = self.prop
         
         if prop is None:
-            def fbase_getter(self):
+            def fbase_getter(self, obj):
                 return obj.__dict__[name]
             
-            def fbase_setter(self, value):
+            def fbase_setter(self, obj, value):
                 obj.__dict__[name] = value
             
-            base_getter = fbase_getter
-            base_setter = fbase_setter
+            base_getter = functools.partial(fbase_getter, self, obj)
+            base_setter = functools.partial(fbase_setter, self, obj)
         else:
             base_getter = functools.partial(prop.__get__, obj, None)
-            base_setter = functools.partial(prop.__get__, obj)
+            base_setter = functools.partial(prop.__set__, obj)
         
         if hasattr(obj, '__nuclear_props'):
             properties = getattr(obj, "__nuclear_props")
@@ -68,7 +69,7 @@ class MutantProperty:
                 )
                 return
         
-        base_setter(self, value) 
+        base_setter(value) 
         
 def mutant_patch_prop(prop, name):
        return MutantProperty (prop, name)    

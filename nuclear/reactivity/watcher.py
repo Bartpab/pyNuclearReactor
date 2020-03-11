@@ -11,7 +11,7 @@ class BaseWatcher:
     
     def update(self):
         pass
-
+        
 class Watcher(BaseWatcher):
     __queue__ = []
     
@@ -21,11 +21,18 @@ class Watcher(BaseWatcher):
             Watcher.__queue__.append(w)
     
     @staticmethod
-    def run_all():
-        while Watcher.__queue__:
-            w = Watcher.__queue__.pop()
-            w.run()
+    def remove(w):
+        if w in Watcher.__queue__:
+            Watcher.__queue__.append(w)
     
+    @staticmethod
+    def run_all():
+        q = Watcher.__queue__[:]
+        while q:
+            w = q.pop(-1)
+            Watcher.__queue__.remove(w)
+            w.run()
+        
     def __init__(self, data, fn, cb=None, options=None):
         BaseWatcher.__init__(self)
 
@@ -73,6 +80,12 @@ class Watcher(BaseWatcher):
     
     def update(self):
         Watcher.add(self)
+    
+    def destroy(self):
+        self.new_deps_ids = []
+        self.new_deps_ids = []
+        self.cleanup_deps()
+        Watcher.remove(self)
     
     def get(self):
         Dep.push_target(self)

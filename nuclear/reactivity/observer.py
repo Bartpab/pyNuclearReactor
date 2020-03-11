@@ -23,7 +23,11 @@ class Observer:
             observe(item)
     
     def walk(self, obj, restrain=None):
-        for key, value in inspect.getmembers(obj):  
+        attrs = {**obj.__dict__}.items()
+        # attrs = inspect.getmembers(obj)
+        for key, value in attrs:  
+            if key.startswith("_"):
+                continue
             if (key.startswith("__") and key.endswith("__")) or key in ("__nuclear_props",):
                 continue
             try:

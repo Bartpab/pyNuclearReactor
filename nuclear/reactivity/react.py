@@ -49,8 +49,8 @@ class ReactiveProperty:
     def set(self, key, new_value, getter, setter):
         from .observe import observe        
         new_value = mutate(new_value)
-        
-        if hasattr(self, key) and id(getter()) == id(new_value):
+
+        if hasattr(self, key) and getter() == new_value:
             return
 
         setter(new_value)

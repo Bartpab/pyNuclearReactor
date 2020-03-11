@@ -1,7 +1,9 @@
 import functools
 
 from .reactivity import observe, Watcher, defineComputed, defineReactive
-from .vnode import create_wtree, create_element, patch, open_wtree, close_wtree
+
+from .vdom.factory import create_vnode
+from .vdom.vnode   import create_el, patch
 
 def dict2obj(**kw):
     obj = type("DataEntry", (), {})() 
@@ -53,27 +55,34 @@ class BaseReactor:
         self.root = root
         
         self.created()
-    
+        
+        self._destroyed = False
     def patch(self):
         self.render()
     
     def render(self): 
-        if not self.root:
+        """
+            Render the node
+        """
+        if self._destroyed:
             return
-            
-        tpl = self.template
-        newNode = tpl(create_element, self)
         
-        open_wtree(self.root)
+        if not self.root:
+            raise Exception("Cannot render without root element")
+            
+        tpl         = self.template
+        
+        # Call the render function
+        new_node    = tpl(create_vnode, self)
         
         if self.node is None:
-            self.node = newNode
-            create_wtree(self.root, self.node)
+            self.node           = new_node
+            create_el(self.node, parent_el=self.root)
         else:
-            self.node = patch(self.node, newNode)
+            self.node = patch(self.node, new_node)
         
-        close_wtree(self.root)
-
+        self.root.Layout()
+        
         return self.node   
     
     def emits(self, event_name, args):
@@ -107,10 +116,17 @@ class BaseReactor:
     def mounted(self):
         pass
     
-    def destroy(self):
-        if self.node and self.node.el:
-            self.node.el.Destroy()
+    def destroyed(self):
+        pass
     
+    def destroy(self):
+        self._destroyed = True
+        self.w.destroy()
+        if self.node:
+            self.node.destroy_el()
+            self.node = None
+        
+        self.destroyed()
 class ReactorAssembly(BaseReactor):
     def __init__(self, props, events, template, data, methods, computed, rods, globals, root):
         BaseReactor.__init__(self, template, data, computed, methods, rods, globals, root)

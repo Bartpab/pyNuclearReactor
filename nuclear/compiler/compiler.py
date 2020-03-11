@@ -22,7 +22,7 @@ def is_local(id, symbol_table):
     return len(symbol_table[id]) > 0
 
 
-ROOT_TPL = """from nuclear.vnode import helpers
+ROOT_TPL = """from nuclear.vdom.helpers import helpers
 import wx
 def render(h, self): 
     _h, _it, _if, _f  = helpers(h, self) {ev_methods}
