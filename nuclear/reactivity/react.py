@@ -53,7 +53,6 @@ class ReactiveProperty:
         
         try:
             if getter() == new_value:
-                print(getter(), new_value)
                 return
         except AttributeError:
             pass
