@@ -4,11 +4,11 @@ from .watcher import Watcher
 from .mutagen import mutate, define_mutated_property
 
 class ComputedProperty:
-    def __init__(self, obj, fn):
+    def __init__(self, obj, fn, **kw):
         self.fn = fn
         self.obj = obj
         
-        self.dep = Dep()
+        self.dep = Dep(**kw)
         self.watcher = Watcher(obj, lambda d: self.compute(d))
         self.init = True
         
@@ -18,7 +18,7 @@ class ComputedProperty:
     
     def get(self, getter):
         self.dep.depend()
-        
+
         if self.init:
             self.watcher.get()
             self.init = False
@@ -29,7 +29,7 @@ class ComputedProperty:
         raise Exception("Cannot modify a computed value.")
         
 def defineComputed(obj, key, fn):     
-    define_mutated_property(obj, key, ComputedProperty(obj, fn)) 
+    define_mutated_property(obj, key, ComputedProperty(obj, fn, key=key, src=obj, src_name=str(obj), is_computed=True)) 
     
 class ReactiveProperty:
     def __init__(self, value, **kw):

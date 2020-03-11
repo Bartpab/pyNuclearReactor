@@ -133,10 +133,10 @@ class BaseReactor:
         self.destroyed()
         
 class ReactorAssembly(BaseReactor):
-    def __init__(self, props, events, template, data, methods, computed, rods, globals, root):
+    def __init__(self, props, events, template, data, methods, computed, rods, globals, root, name):
         data_and_props = {**data}
         data_and_props.update(props)
-        
+        self.name = name
         BaseReactor.__init__(self, template, data_and_props, computed, methods, rods, globals, root)
         self.events = {}
         self.bind_events(events)
@@ -150,6 +150,9 @@ class ReactorAssembly(BaseReactor):
     def emit(self, event, args):
         if event in self.events:
             [c(args) for c in self.events[event]]
+    
+    def __str__(self):
+        return "ReactorAssembly::{}".format(self.name)
         
 class Reactor(BaseReactor):
     def set(self, key, value):

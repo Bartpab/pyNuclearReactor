@@ -27,10 +27,8 @@ class Watcher(BaseWatcher):
     
     @staticmethod
     def run_all():
-        q = Watcher.__queue__[:]
-        while q:
-            w = q.pop(-1)
-            Watcher.__queue__.remove(w)
+        while Watcher.__queue__:
+            w = Watcher.__queue__.pop(-1)
             w.run()
         
     def __init__(self, data, fn, cb=None, options=None):
