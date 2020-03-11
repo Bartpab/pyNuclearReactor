@@ -34,8 +34,8 @@ def defineComputed(obj, key, fn):
 class ReactiveProperty:
     def __init__(self, value):
         from .observe import observe
-        self.dep = Dep()
-        self.ob_child = observe(value)
+        self.dep        = Dep()
+        self.ob_child   = observe(value)
      
     def get(self, getter):
         self.dep.depend()
@@ -44,14 +44,19 @@ class ReactiveProperty:
             self.ob_child.dep.depend()
         
         value = getter()
+        
         return value
     
     def set(self, key, new_value, getter, setter):
         from .observe import observe        
         new_value = mutate(new_value)
-
-        if hasattr(self, key) and getter() == new_value:
-            return
+        
+        try:
+            if getter() == new_value:
+                print(getter(), new_value)
+                return
+        except AttributeError:
+            pass
 
         setter(new_value)
         self.ob_child = observe(new_value)

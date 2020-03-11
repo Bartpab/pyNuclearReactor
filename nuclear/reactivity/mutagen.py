@@ -19,13 +19,13 @@ class MutantProperty:
         self.prop = prop
         self.name = name
     
-    def __get__(self, obj, objtype=None):           
+    def __get__(self, obj, objtype=None): 
         name = self.name
         prop = self.prop
         
         if prop is None:
             def fbase_getter(self, obj):
-                return obj.__dict__[name]
+                return self.value
             
             base_getter = functools.partial(fbase_getter, self, obj)
         
@@ -47,10 +47,10 @@ class MutantProperty:
         
         if prop is None:
             def fbase_getter(self, obj):
-                return obj.__dict__[name]
+                return self.value 
             
             def fbase_setter(self, obj, value):
-                obj.__dict__[name] = value
+                self.value = value
             
             base_getter = functools.partial(fbase_getter, self, obj)
             base_setter = functools.partial(fbase_setter, self, obj)
