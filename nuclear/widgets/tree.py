@@ -36,7 +36,7 @@ class Tree(wx.TreeCtrl):
                     ctree_node = self.AppendItem(tree_node, key, data=data)
                     self.rec_tree(value, ctree_node)
                 else:
-                    self.SetItemData(tree_node, (key, value))
+                    self.SetItemData(tree_node, value)
    
     def SetTree(self, tree):
         self.DeleteAllItems()

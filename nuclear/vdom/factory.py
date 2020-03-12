@@ -5,9 +5,15 @@ from .custom    import is_custom_element, create_custom_node
 from .vnode     import VNode
   
 def create_vnode(context, tag, data, children, events=None):
-    if is_native_element(tag):
-        return create_native_node(tag, data, children, events)
-    elif is_custom_element(tag):
-        return create_custom_node(tag, data, children, events)
+    vnode = None
+    
+    if is_custom_element(tag):
+        vnode = create_custom_node(tag, data, children, events)
+    
+    elif is_native_element(tag):
+        vnode = create_native_node(tag, data, children, events)
+    
     else:
-        return create_assembly_node(context, tag, data, events)
+        vnode = create_assembly_node(context, tag, data, events)
+    
+    return vnode

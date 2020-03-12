@@ -2,6 +2,7 @@ import functools
 
 from .reactivity import observe, Watcher, defineComputed, defineReactive
 
+from .style        import StyleEngine
 from .vdom.factory import create_vnode
 from .vdom.vnode   import create_el, patch
 
@@ -60,6 +61,7 @@ class BaseReactor:
         self.created()
         
         self._destroyed = False
+    
     def patch(self):
         self.render()
     
@@ -84,8 +86,11 @@ class BaseReactor:
         else:
             self.node = patch(self.node, new_node)
         
-        self.root.Layout()
+        if hasattr(self, "g_style"):
+            self.g_style.rec_apply(self.node.get_el())
         
+        self.root.Layout()
+
         return self.node   
     
     def emits(self, event_name, args):
@@ -123,6 +128,14 @@ class BaseReactor:
     def destroyed(self):
         pass
     
+    def els(self, key):
+        n = self.node.get(key)
+       
+        if n:
+            return n.get_el()
+        else:
+            return None
+            
     def destroy(self):
         self._destroyed = True
         self.w.destroy()
@@ -167,6 +180,7 @@ class Reactor(BaseReactor):
 
     def nexTick(self, dt):
         Watcher.run_all()
+        StyleEngine.run_all()
 
 
         

@@ -1,6 +1,7 @@
-from .native import set_data_to_native, set_events_to_native, set_nesting_properties
+from .native import set_data_to_native, set_events_to_native, set_nesting_properties, set_style_to_native
 from .el_helpers import entering_el, leaving_el
 from .children_helpers import update_children
+from ..style import StyleEngine
 
 class VNode:
     @staticmethod
@@ -19,6 +20,19 @@ class VNode:
         self.set_children(children)
         self.events = events
         self.id = None
+        self.key = None if "key" not in data else data["key"]
+    
+    def get(self, key):
+        s = [self]
+        
+        while s:
+            e = s.pop()
+            if e.key == key:
+                return e
+            else:
+                s.extend(e.children)
+        
+        return None
     
     def set_parent(self, p):
         p.add_child(self)
@@ -92,7 +106,7 @@ class AssemblyVNode(VNode):
     def destroy_el(self):
         if self.component_instance:
             self.component_instance.destroy()
-            
+
 class NativeVNode(VNode):
     def __init__(self, tag, el_factory, data, children, events):
         VNode.__init__(self, tag, data, children, events)
@@ -103,20 +117,25 @@ class NativeVNode(VNode):
     
     def destroy_el(self):
         if self.el:
+            StyleEngine.remove(self.el)
             self.el.Destroy()
         
     def create_el(self, el_contexts):
         try:
             self.el = self.el_factory(
-                parent = self.get_parent_el(raise_if_none=True)
+                parent=self.get_parent_el(raise_if_none=True)
             )
+        
         except Exception as e:
             raise Exception("Cannot create el from vnode {}, because {} <Stack={}>.".format(self.tag, str(e), el_contexts["stack"]))
         
         try:
             set_nesting_properties(self.data, self.el, el_contexts)
+            set_style_to_native(self.el, StyleEngine)
             set_data_to_native(self.el, self.data)
             set_events_to_native(self.el, self.events)
+            StyleEngine.apply(self.el)
+
         except Exception as e:
             print(e)
         
@@ -144,12 +163,17 @@ class NativeVNode(VNode):
 def create_el_contexts(vnode):
     p_el = vnode.get_parent_el()
     
-    return {
-        "sizers": [p_el.GetSizer()],
+    c = {
+        "sizers": [],
         "stack": []
     }
     
-def create_el(vnode, parent_el=None, el_contexts=None):
+    if p_el.GetSizer():
+        c["sizers"].append(p_el.GetSizer())
+    
+    return c
+    
+def create_el(vnode, parent_el = None, el_contexts = None):
     if not parent_el and not vnode.parent:
         raise Exception("Cannot create element as no root was defined (either virtual or real ones)")
     

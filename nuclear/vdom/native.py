@@ -19,13 +19,20 @@ def create_native_node(tag, data, children, events=None):
 
 def set_data_to_native(el, data):
     for key, value in data.items():
-        if key in ("sopt", "key"):
+        if key == "class":
+            setattr(el, "style_class", value)
             continue
-
+        
+        if key == "key":
+            setattr(el, "key", value)
+            continue
+            
+        if key in ("sopt", "key", "class"):
+            continue
+        
         wMethName = "Set" + key[0].upper() + key[1:]
         wMeth = getattr(el, wMethName)
         wMeth(value)
-
 
 def set_events_to_native(el, events):
     for k, v in events.items():
@@ -47,4 +54,33 @@ def set_nesting_properties(data, el, el_contexts):
             if c.GetWindow() == el: 
                 return
         
-        el_contexts["sizers"][-1].Add(el, **kw)    
+        if isinstance(el, wx.Window):
+            el.szr_ctrl = el_contexts["sizers"][-1].Add(el, **kw)    
+
+def set_font_size(el, val):
+    font = el.GetFont()
+    font.SetPointSize(val)
+    el.SetFont(font)
+
+def hex_to_rgb(value):
+    value = value.lstrip('#')
+    lv = len(value)
+    return tuple(int(value[i:i + lv // 3], 16) for i in range(0, lv, lv // 3))
+
+def set_background_color(setter, value):
+    color = wx.Colour(*hex_to_rgb(value)) 
+    setter(color)
+
+def set_margin(el, value):
+    if hasattr(el, "szr_ctrl"):
+        el.szr_ctrl.SetBorder(value)
+    
+def set_style_to_native(el, style):
+    el.SetFontSize = lambda val: set_font_size(el, val)
+    
+    if hasattr(el, "SetBackgroundColour"):
+        setter = el.SetBackgroundColour
+        el.SetBackgroundColour = lambda val: set_background_color(setter, val)
+    
+    el.SetMargin = lambda val: set_margin(el, val)
+    style.add(el)
