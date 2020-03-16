@@ -5,6 +5,9 @@ def entering_el(el, el_contexts):
     el_contexts["stack"].append(el)
     
 def leaving_el(el, el_contexts):
+    if hasattr(el, "Layout"):
+        el.Layout()
+        
     if hasattr(el, "GetSize") and el.GetSizer():
         el_contexts["sizers"].pop(-1)
     

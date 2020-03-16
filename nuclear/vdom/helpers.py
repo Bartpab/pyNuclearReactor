@@ -5,7 +5,10 @@ def helpers(h, self):
         return h(self, tag, data, children, events)    
     
     def _it(iterator, el_fn):
-        return [el_fn(el) for el in iterator]
+        items = []
+        for el in iterator:
+            items.extend(el_fn(el))
+        return items
     
     def _if(b, if_fn, else_fn=None):
         if b:

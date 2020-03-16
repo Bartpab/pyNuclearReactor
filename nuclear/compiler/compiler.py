@@ -36,7 +36,7 @@ FOR_TPL = "*_it({iterable}, lambda {argname}: [{children}])"
 IF_TPL  = "*_if({condition}, lambda: [{children}])"
 
 EV_TPL = """
-    def ev_{id}(e):
+    def ev_{id}({args}):
         {expr}
 """
 
@@ -115,12 +115,22 @@ def c(ast_node, symbol_table, event_methods):
         expr = args["value"]
         name = args["name"]
         i = len(event_methods)
+               
+        locals = []
+        
+        for k, v in symbol_table.items():
+            if k in ("wx", "True", "False"):
+                continue
+            if v:
+                locals.append(k)
+        
+        args = ["e", *locals]
         
         push_scope('e', [], symbol_table)
-        event_methods.append(EV_TPL.format(id=i, expr=_c(expr)))
+        event_methods.append(EV_TPL.format(id=i, args=", ".join(args), expr=_c(expr)))
         pop_scope('e', symbol_table)
         
-        fn_id = "ev_{id}".format(id=i)
+        fn_id = "lambda e: ev_{id}({args})".format(id=i, args=", ".join(args))
         
         return "\"{key}\" : {value}".format(
             key=name,

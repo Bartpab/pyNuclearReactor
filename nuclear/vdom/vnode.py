@@ -81,6 +81,7 @@ class VNode:
     def destroy(self):
         if self.parent:
             self.parent.remove_child(self)
+        self.destroy_el()
     
     def destroy_el(self):
         raise NotImplementedError()
@@ -94,12 +95,15 @@ class AssemblyVNode(VNode):
         self.component_instance.root = self.get_parent_el()
         self.component_instance.mount()
     
-    def patch_from(self, other, el_contexts): 
-        self.component_instance.destroy()
-        self.component_instance = other.component_instance
-        self.component_instance.root = self.get_parent_el()
-        self.component_instance.mount()       
-
+    def patch_from(self, other, el_contexts, recreate): 
+        if recreate:
+            self.component_instance.destroy()
+            self.component_instance = other.component_instance
+            self.component_instance.root = self.get_parent_el()
+            self.component_instance.mount()       
+        else:
+            self.component_instance.patch()
+            
     def get_el(self):
         return self.parent_el
     
@@ -125,7 +129,6 @@ class NativeVNode(VNode):
             self.el = self.el_factory(
                 parent=self.get_parent_el(raise_if_none=True)
             )
-        
         except Exception as e:
             raise Exception("Cannot create el from vnode {}, because {} <Stack={}>.".format(self.tag, str(e), el_contexts["stack"]))
         
@@ -146,19 +149,23 @@ class NativeVNode(VNode):
         
         leaving_el(self.el, el_contexts) # Leaving node
         
-    def patch_from(self, other, el_contexts):
-        self.data = {**other.data}
+        
+    def patch_from(self, other, el_contexts, recreate = False):
+        self.data   = {**other.data}
         self.events = {**other.events}
         
-        set_nesting_properties(self.data, self.el, el_contexts)
-        set_data_to_native(self.el, self.data)
-        set_events_to_native(self.el, self.events)  
-        
-        entering_el(self.el, el_contexts) # Entering node
-        
-        update_children(self, other, el_contexts)
-        
-        leaving_el(self.el, el_contexts) # Leaving node
+        if recreate:
+            self.destroy_el()
+            self.el_factory = other.el_factory
+            self.create_el(el_contexts)
+        else:
+            set_nesting_properties(self.data, self.el, el_contexts)
+            set_data_to_native(self.el, self.data)
+            set_events_to_native(self.el, self.events)  
+            
+            entering_el(self.el, el_contexts) # Entering node
+            update_children(self, other, el_contexts)
+            leaving_el(self.el, el_contexts) # Leaving node
         
 def create_el_contexts(vnode):
     p_el = vnode.get_parent_el()
@@ -185,7 +192,7 @@ def create_el(vnode, parent_el = None, el_contexts = None):
     
     return vnode.create_el(el_contexts)
 
-def patch(old, new, el_contexts=None):
+def patch(old, new, el_contexts=None, order_changed=False):
     """
         Patch the vnode and apply it to the real one
     """
@@ -193,9 +200,8 @@ def patch(old, new, el_contexts=None):
         el_contexts = create_el_contexts(old)
 
     if old.same(new):
-        old.patch_from(new, el_contexts)
+        old.patch_from(new, el_contexts, order_changed)
         return old
-    
     else:   
         old.transfer(new)
         old.destroy_el()

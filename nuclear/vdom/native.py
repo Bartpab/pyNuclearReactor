@@ -38,8 +38,12 @@ def set_events_to_native(el, events):
     for k, v in events.items():
         if k == "click" and type(el) is wx.Button:
             el.Bind(wx.EVT_BUTTON, v)
+        elif k == "click":
+            el.Bind(wx.EVT_LEFT_DOWN, v)
         elif k == "change" and type(el) is wx.TextCtrl:
             el.Bind(wx.EVT_TEXT, lambda e: v(e.GetEventObject().GetValue()))
+        elif k == "change" and isinstance(el, wx.ComboBox):
+            el.Bind(wx.EVT_COMBOBOX, lambda e: v(e.GetEventObject().GetValue()))
         elif k == "change" and isinstance(el, wx.TreeCtrl):
             el.Bind(wx.EVT_TREE_SEL_CHANGED, lambda e: v(el.GetItemData(e.GetItem())))
         else:

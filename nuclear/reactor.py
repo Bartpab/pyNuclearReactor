@@ -90,7 +90,7 @@ class BaseReactor:
             self.g_style.rec_apply(self.node.get_el())
         
         self.root.Layout()
-
+        
         return self.node   
     
     def emits(self, event_name, args):
@@ -175,12 +175,14 @@ class Reactor(BaseReactor):
     def __init__(self, template, data, methods, computed, rods, root, globals=None):
         if not globals:
             globals = {}
-            
+
         BaseReactor.__init__(self, template, data, computed, methods, rods, globals, root)
 
     def nexTick(self, dt):
         Watcher.run_all()
         StyleEngine.run_all()
+        
+        
 
 
         
