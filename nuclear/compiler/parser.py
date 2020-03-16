@@ -17,8 +17,12 @@ def p_attrs(p):
 def p_fn(p):
     '''
         fn : id LPAR expr RPAR
+           | id LPAR RPAR
     '''
-    p[0] = ("fn", {"name": p[1], "args": [p[3]]})
+    if len(p) == 5: 
+        p[0] = ("fn", {"name": p[1], "args": [p[3]]})
+    else:
+        p[0] = ("fn", {"name": p[1], "args": []})
 
 def p_binop_expr(p):
     '''
