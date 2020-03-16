@@ -31,6 +31,7 @@ def p_el_selector(p):
     '''
         el_selector : tag_selector
                     | el_selector class_selector
+                    | el_selector state_selector
     '''
     if len(p) == 2:
         p[0] = ('el-selector', [p[1]])
@@ -44,6 +45,10 @@ def p_tag_selector(p):
 def p_class_selector(p):
     'class_selector : PUNCT ID'
     p[0] = ('class-selector', p[2])
+    
+def p_state_selector(p):
+    'state_selector : ASSIGN ID'
+    p[0] = ('state-selector', p[2])
 
 # Logic of the rule
 def p_decls(p):
@@ -54,7 +59,7 @@ def p_decls(p):
     if len(p) == 2:
         p[0] = ('decls', [p[1]])
     else:
-        p[0] = ('decls', p[1] + [p[3]])
+        p[0] = ('decls', p[1][1] + [p[3]])
 
 def p_decl(p):
     '''

@@ -1,5 +1,6 @@
 from .helpers import is_class, is_tag
-    
+import wx
+
 class StyleRule:
     def __init__(self, selector_fn, rule_fn):
         self.selector_fn = selector_fn
@@ -32,9 +33,26 @@ class StyleEngine:
             StyleEngine.__els__.remove(el)
             
     @staticmethod
+    def on_hover(e):
+        el = e.GetEventObject()
+        el.hover = True
+        StyleEngine.apply(el)
+    
+    @staticmethod
+    def on_hover_over(e):
+        el = e.GetEventObject()
+        el.hover = False  
+        StyleEngine.apply(el)
+    
+    @staticmethod
     def run_all():
         while StyleEngine.__new__:
             el = StyleEngine.__new__.pop(-1)
+            
+            if hasattr(el, "Bind"):
+                el.Bind(wx.EVT_ENTER_WINDOW,    StyleEngine.on_hover)
+                el.Bind(wx.EVT_LEAVE_WINDOW,  StyleEngine.on_hover_over)
+            
             StyleEngine.apply(el)
             StyleEngine.__els__.append(el)
     

@@ -8,3 +8,6 @@ def is_class(style_cls, el):
         return False
     
     return style_cls == cls
+
+def is_state(state, el):
+    return hasattr(el, state) and getattr(el, state)

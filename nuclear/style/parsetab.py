@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = 'rulesetsASSIGN BG_BLOCK END_BLOCK ID NORMSTRING NUMBER PUNCT SEP\n        rulesets : ruleset\n                 | rulesets ruleset\n    ruleset : selector block\n        selector : selector el_selector \n                | el_selector\n    \n        el_selector : tag_selector\n                    | el_selector class_selector\n    tag_selector : IDclass_selector : PUNCT ID\n        decls : decls SEP decl \n              | decl\n    \n        decl : property ASSIGN value\n    \n        value : NORMSTRING\n              | NUMBER\n    \n        property : ID\n    block : BG_BLOCK decls END_BLOCK'
+_lr_signature = 'rulesetsASSIGN BG_BLOCK END_BLOCK ID NORMSTRING NUMBER PUNCT SEP\n        rulesets : ruleset\n                 | rulesets ruleset\n    ruleset : selector block\n        selector : selector el_selector \n                | el_selector\n    \n        el_selector : tag_selector\n                    | el_selector class_selector\n                    | el_selector state_selector\n    tag_selector : IDclass_selector : PUNCT IDstate_selector : ASSIGN ID\n        decls : decls SEP decl \n              | decl\n    \n        decl : property ASSIGN value\n    \n        value : NORMSTRING\n              | NUMBER\n    \n        property : ID\n    block : BG_BLOCK decls END_BLOCK'
     
-_lr_action_items = {'ID':([0,1,2,3,4,5,6,7,8,9,10,11,12,17,18,19,],[6,6,-1,6,-5,-6,-8,-2,-3,-4,16,-7,17,-9,-16,16,]),'$end':([1,2,7,8,18,],[0,-1,-2,-3,-16,]),'BG_BLOCK':([3,4,5,6,9,11,17,],[10,-5,-6,-8,-4,-7,-9,]),'PUNCT':([4,5,6,9,11,17,],[12,-6,-8,12,-7,-9,]),'END_BLOCK':([13,14,21,22,23,24,],[18,-11,-10,-12,-13,-14,]),'SEP':([13,14,21,22,23,24,],[19,-11,-10,-12,-13,-14,]),'ASSIGN':([15,16,],[20,-15,]),'NORMSTRING':([20,],[23,]),'NUMBER':([20,],[24,]),}
+_lr_action_items = {'ID':([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,19,20,21,22,],[6,6,-1,6,-5,-6,-9,-2,-3,-4,18,-7,-8,19,20,-10,-11,-18,18,]),'$end':([1,2,7,8,21,],[0,-1,-2,-3,-18,]),'BG_BLOCK':([3,4,5,6,9,11,12,19,20,],[10,-5,-6,-9,-4,-7,-8,-10,-11,]),'PUNCT':([4,5,6,9,11,12,19,20,],[13,-6,-9,13,-7,-8,-10,-11,]),'ASSIGN':([4,5,6,9,11,12,17,18,19,20,],[14,-6,-9,14,-7,-8,23,-17,-10,-11,]),'END_BLOCK':([15,16,24,25,26,27,],[21,-13,-12,-14,-15,-16,]),'SEP':([15,16,24,25,26,27,],[22,-13,-12,-14,-15,-16,]),'NORMSTRING':([23,],[26,]),'NUMBER':([23,],[27,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'rulesets':([0,],[1,]),'ruleset':([0,1,],[2,7,]),'selector':([0,1,],[3,3,]),'el_selector':([0,1,3,],[4,4,9,]),'tag_selector':([0,1,3,],[5,5,5,]),'block':([3,],[8,]),'class_selector':([4,9,],[11,11,]),'decls':([10,],[13,]),'decl':([10,19,],[14,21,]),'property':([10,19,],[15,15,]),'value':([20,],[22,]),}
+_lr_goto_items = {'rulesets':([0,],[1,]),'ruleset':([0,1,],[2,7,]),'selector':([0,1,],[3,3,]),'el_selector':([0,1,3,],[4,4,9,]),'tag_selector':([0,1,3,],[5,5,5,]),'block':([3,],[8,]),'class_selector':([4,9,],[11,11,]),'state_selector':([4,9,],[12,12,]),'decls':([10,],[15,]),'decl':([10,22,],[16,24,]),'property':([10,22,],[17,17,]),'value':([23,],[25,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -34,13 +34,15 @@ _lr_productions = [
   ('selector -> el_selector','selector',1,'p_selector','parser.py',22),
   ('el_selector -> tag_selector','el_selector',1,'p_el_selector','parser.py',32),
   ('el_selector -> el_selector class_selector','el_selector',2,'p_el_selector','parser.py',33),
-  ('tag_selector -> ID','tag_selector',1,'p_tag_selector','parser.py',41),
-  ('class_selector -> PUNCT ID','class_selector',2,'p_class_selector','parser.py',45),
-  ('decls -> decls SEP decl','decls',3,'p_decls','parser.py',51),
-  ('decls -> decl','decls',1,'p_decls','parser.py',52),
-  ('decl -> property ASSIGN value','decl',3,'p_decl','parser.py',61),
-  ('value -> NORMSTRING','value',1,'p_value','parser.py',67),
-  ('value -> NUMBER','value',1,'p_value','parser.py',68),
-  ('property -> ID','property',1,'p_property','parser.py',74),
-  ('block -> BG_BLOCK decls END_BLOCK','block',3,'p_block','parser.py',79),
+  ('el_selector -> el_selector state_selector','el_selector',2,'p_el_selector','parser.py',34),
+  ('tag_selector -> ID','tag_selector',1,'p_tag_selector','parser.py',42),
+  ('class_selector -> PUNCT ID','class_selector',2,'p_class_selector','parser.py',46),
+  ('state_selector -> ASSIGN ID','state_selector',2,'p_state_selector','parser.py',50),
+  ('decls -> decls SEP decl','decls',3,'p_decls','parser.py',56),
+  ('decls -> decl','decls',1,'p_decls','parser.py',57),
+  ('decl -> property ASSIGN value','decl',3,'p_decl','parser.py',66),
+  ('value -> NORMSTRING','value',1,'p_value','parser.py',72),
+  ('value -> NUMBER','value',1,'p_value','parser.py',73),
+  ('property -> ID','property',1,'p_property','parser.py',79),
+  ('block -> BG_BLOCK decls END_BLOCK','block',3,'p_block','parser.py',84),
 ]

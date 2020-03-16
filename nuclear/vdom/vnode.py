@@ -96,14 +96,11 @@ class AssemblyVNode(VNode):
         self.component_instance.mount()
     
     def patch_from(self, other, el_contexts, recreate): 
-        if recreate:
-            self.component_instance.destroy()
-            self.component_instance = other.component_instance
-            self.component_instance.root = self.get_parent_el()
-            self.component_instance.mount()       
-        else:
-            self.component_instance.patch()
-            
+        self.component_instance.destroy()
+        self.component_instance = other.component_instance
+        self.component_instance.root = self.get_parent_el()
+        self.component_instance.mount()   
+
     def get_el(self):
         return self.parent_el
     

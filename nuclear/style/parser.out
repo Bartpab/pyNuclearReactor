@@ -10,41 +10,44 @@ Rule 4     selector -> selector el_selector
 Rule 5     selector -> el_selector
 Rule 6     el_selector -> tag_selector
 Rule 7     el_selector -> el_selector class_selector
-Rule 8     tag_selector -> ID
-Rule 9     class_selector -> PUNCT ID
-Rule 10    decls -> decls SEP decl
-Rule 11    decls -> decl
-Rule 12    decl -> property ASSIGN value
-Rule 13    value -> NORMSTRING
-Rule 14    value -> NUMBER
-Rule 15    property -> ID
-Rule 16    block -> BG_BLOCK decls END_BLOCK
+Rule 8     el_selector -> el_selector state_selector
+Rule 9     tag_selector -> ID
+Rule 10    class_selector -> PUNCT ID
+Rule 11    state_selector -> ASSIGN ID
+Rule 12    decls -> decls SEP decl
+Rule 13    decls -> decl
+Rule 14    decl -> property ASSIGN value
+Rule 15    value -> NORMSTRING
+Rule 16    value -> NUMBER
+Rule 17    property -> ID
+Rule 18    block -> BG_BLOCK decls END_BLOCK
 
 Terminals, with rules where they appear
 
-ASSIGN               : 12
-BG_BLOCK             : 16
-END_BLOCK            : 16
-ID                   : 8 9 15
-NORMSTRING           : 13
-NUMBER               : 14
-PUNCT                : 9
-SEP                  : 10
+ASSIGN               : 11 14
+BG_BLOCK             : 18
+END_BLOCK            : 18
+ID                   : 9 10 11 17
+NORMSTRING           : 15
+NUMBER               : 16
+PUNCT                : 10
+SEP                  : 12
 error                : 
 
 Nonterminals, with rules where they appear
 
 block                : 3
 class_selector       : 7
-decl                 : 10 11
-decls                : 10 16
-el_selector          : 4 5 7
-property             : 12
+decl                 : 12 13
+decls                : 12 18
+el_selector          : 4 5 7 8
+property             : 14
 ruleset              : 1 2
 rulesets             : 2 0
 selector             : 3 4
+state_selector       : 8
 tag_selector         : 6
-value                : 12
+value                : 14
 
 Parsing method: LALR
 
@@ -58,7 +61,8 @@ state 0
     (5) selector -> . el_selector
     (6) el_selector -> . tag_selector
     (7) el_selector -> . el_selector class_selector
-    (8) tag_selector -> . ID
+    (8) el_selector -> . el_selector state_selector
+    (9) tag_selector -> . ID
 
     ID              shift and go to state 6
 
@@ -77,7 +81,8 @@ state 1
     (5) selector -> . el_selector
     (6) el_selector -> . tag_selector
     (7) el_selector -> . el_selector class_selector
-    (8) tag_selector -> . ID
+    (8) el_selector -> . el_selector state_selector
+    (9) tag_selector -> . ID
 
     ID              shift and go to state 6
 
@@ -98,10 +103,11 @@ state 3
 
     (3) ruleset -> selector . block
     (4) selector -> selector . el_selector
-    (16) block -> . BG_BLOCK decls END_BLOCK
+    (18) block -> . BG_BLOCK decls END_BLOCK
     (6) el_selector -> . tag_selector
     (7) el_selector -> . el_selector class_selector
-    (8) tag_selector -> . ID
+    (8) el_selector -> . el_selector state_selector
+    (9) tag_selector -> . ID
 
     BG_BLOCK        shift and go to state 10
     ID              shift and go to state 6
@@ -114,30 +120,36 @@ state 4
 
     (5) selector -> el_selector .
     (7) el_selector -> el_selector . class_selector
-    (9) class_selector -> . PUNCT ID
+    (8) el_selector -> el_selector . state_selector
+    (10) class_selector -> . PUNCT ID
+    (11) state_selector -> . ASSIGN ID
 
     BG_BLOCK        reduce using rule 5 (selector -> el_selector .)
     ID              reduce using rule 5 (selector -> el_selector .)
-    PUNCT           shift and go to state 12
+    PUNCT           shift and go to state 13
+    ASSIGN          shift and go to state 14
 
     class_selector                 shift and go to state 11
+    state_selector                 shift and go to state 12
 
 state 5
 
     (6) el_selector -> tag_selector .
 
     PUNCT           reduce using rule 6 (el_selector -> tag_selector .)
+    ASSIGN          reduce using rule 6 (el_selector -> tag_selector .)
     BG_BLOCK        reduce using rule 6 (el_selector -> tag_selector .)
     ID              reduce using rule 6 (el_selector -> tag_selector .)
 
 
 state 6
 
-    (8) tag_selector -> ID .
+    (9) tag_selector -> ID .
 
-    PUNCT           reduce using rule 8 (tag_selector -> ID .)
-    BG_BLOCK        reduce using rule 8 (tag_selector -> ID .)
-    ID              reduce using rule 8 (tag_selector -> ID .)
+    PUNCT           reduce using rule 9 (tag_selector -> ID .)
+    ASSIGN          reduce using rule 9 (tag_selector -> ID .)
+    BG_BLOCK        reduce using rule 9 (tag_selector -> ID .)
+    ID              reduce using rule 9 (tag_selector -> ID .)
 
 
 state 7
@@ -160,142 +172,175 @@ state 9
 
     (4) selector -> selector el_selector .
     (7) el_selector -> el_selector . class_selector
-    (9) class_selector -> . PUNCT ID
+    (8) el_selector -> el_selector . state_selector
+    (10) class_selector -> . PUNCT ID
+    (11) state_selector -> . ASSIGN ID
 
     BG_BLOCK        reduce using rule 4 (selector -> selector el_selector .)
     ID              reduce using rule 4 (selector -> selector el_selector .)
-    PUNCT           shift and go to state 12
+    PUNCT           shift and go to state 13
+    ASSIGN          shift and go to state 14
 
     class_selector                 shift and go to state 11
+    state_selector                 shift and go to state 12
 
 state 10
 
-    (16) block -> BG_BLOCK . decls END_BLOCK
-    (10) decls -> . decls SEP decl
-    (11) decls -> . decl
-    (12) decl -> . property ASSIGN value
-    (15) property -> . ID
+    (18) block -> BG_BLOCK . decls END_BLOCK
+    (12) decls -> . decls SEP decl
+    (13) decls -> . decl
+    (14) decl -> . property ASSIGN value
+    (17) property -> . ID
 
-    ID              shift and go to state 16
+    ID              shift and go to state 18
 
-    decls                          shift and go to state 13
-    decl                           shift and go to state 14
-    property                       shift and go to state 15
+    decls                          shift and go to state 15
+    decl                           shift and go to state 16
+    property                       shift and go to state 17
 
 state 11
 
     (7) el_selector -> el_selector class_selector .
 
     PUNCT           reduce using rule 7 (el_selector -> el_selector class_selector .)
+    ASSIGN          reduce using rule 7 (el_selector -> el_selector class_selector .)
     BG_BLOCK        reduce using rule 7 (el_selector -> el_selector class_selector .)
     ID              reduce using rule 7 (el_selector -> el_selector class_selector .)
 
 
 state 12
 
-    (9) class_selector -> PUNCT . ID
+    (8) el_selector -> el_selector state_selector .
 
-    ID              shift and go to state 17
+    PUNCT           reduce using rule 8 (el_selector -> el_selector state_selector .)
+    ASSIGN          reduce using rule 8 (el_selector -> el_selector state_selector .)
+    BG_BLOCK        reduce using rule 8 (el_selector -> el_selector state_selector .)
+    ID              reduce using rule 8 (el_selector -> el_selector state_selector .)
 
 
 state 13
 
-    (16) block -> BG_BLOCK decls . END_BLOCK
-    (10) decls -> decls . SEP decl
+    (10) class_selector -> PUNCT . ID
 
-    END_BLOCK       shift and go to state 18
-    SEP             shift and go to state 19
+    ID              shift and go to state 19
 
 
 state 14
 
-    (11) decls -> decl .
+    (11) state_selector -> ASSIGN . ID
 
-    END_BLOCK       reduce using rule 11 (decls -> decl .)
-    SEP             reduce using rule 11 (decls -> decl .)
+    ID              shift and go to state 20
 
 
 state 15
 
-    (12) decl -> property . ASSIGN value
+    (18) block -> BG_BLOCK decls . END_BLOCK
+    (12) decls -> decls . SEP decl
 
-    ASSIGN          shift and go to state 20
+    END_BLOCK       shift and go to state 21
+    SEP             shift and go to state 22
 
 
 state 16
 
-    (15) property -> ID .
+    (13) decls -> decl .
 
-    ASSIGN          reduce using rule 15 (property -> ID .)
+    END_BLOCK       reduce using rule 13 (decls -> decl .)
+    SEP             reduce using rule 13 (decls -> decl .)
 
 
 state 17
 
-    (9) class_selector -> PUNCT ID .
+    (14) decl -> property . ASSIGN value
 
-    PUNCT           reduce using rule 9 (class_selector -> PUNCT ID .)
-    BG_BLOCK        reduce using rule 9 (class_selector -> PUNCT ID .)
-    ID              reduce using rule 9 (class_selector -> PUNCT ID .)
+    ASSIGN          shift and go to state 23
 
 
 state 18
 
-    (16) block -> BG_BLOCK decls END_BLOCK .
+    (17) property -> ID .
 
-    ID              reduce using rule 16 (block -> BG_BLOCK decls END_BLOCK .)
-    $end            reduce using rule 16 (block -> BG_BLOCK decls END_BLOCK .)
+    ASSIGN          reduce using rule 17 (property -> ID .)
 
 
 state 19
 
-    (10) decls -> decls SEP . decl
-    (12) decl -> . property ASSIGN value
-    (15) property -> . ID
+    (10) class_selector -> PUNCT ID .
 
-    ID              shift and go to state 16
+    PUNCT           reduce using rule 10 (class_selector -> PUNCT ID .)
+    ASSIGN          reduce using rule 10 (class_selector -> PUNCT ID .)
+    BG_BLOCK        reduce using rule 10 (class_selector -> PUNCT ID .)
+    ID              reduce using rule 10 (class_selector -> PUNCT ID .)
 
-    decl                           shift and go to state 21
-    property                       shift and go to state 15
 
 state 20
 
-    (12) decl -> property ASSIGN . value
-    (13) value -> . NORMSTRING
-    (14) value -> . NUMBER
+    (11) state_selector -> ASSIGN ID .
 
-    NORMSTRING      shift and go to state 23
-    NUMBER          shift and go to state 24
+    PUNCT           reduce using rule 11 (state_selector -> ASSIGN ID .)
+    ASSIGN          reduce using rule 11 (state_selector -> ASSIGN ID .)
+    BG_BLOCK        reduce using rule 11 (state_selector -> ASSIGN ID .)
+    ID              reduce using rule 11 (state_selector -> ASSIGN ID .)
 
-    value                          shift and go to state 22
 
 state 21
 
-    (10) decls -> decls SEP decl .
+    (18) block -> BG_BLOCK decls END_BLOCK .
 
-    END_BLOCK       reduce using rule 10 (decls -> decls SEP decl .)
-    SEP             reduce using rule 10 (decls -> decls SEP decl .)
+    ID              reduce using rule 18 (block -> BG_BLOCK decls END_BLOCK .)
+    $end            reduce using rule 18 (block -> BG_BLOCK decls END_BLOCK .)
 
 
 state 22
 
-    (12) decl -> property ASSIGN value .
+    (12) decls -> decls SEP . decl
+    (14) decl -> . property ASSIGN value
+    (17) property -> . ID
 
-    END_BLOCK       reduce using rule 12 (decl -> property ASSIGN value .)
-    SEP             reduce using rule 12 (decl -> property ASSIGN value .)
+    ID              shift and go to state 18
 
+    decl                           shift and go to state 24
+    property                       shift and go to state 17
 
 state 23
 
-    (13) value -> NORMSTRING .
+    (14) decl -> property ASSIGN . value
+    (15) value -> . NORMSTRING
+    (16) value -> . NUMBER
 
-    END_BLOCK       reduce using rule 13 (value -> NORMSTRING .)
-    SEP             reduce using rule 13 (value -> NORMSTRING .)
+    NORMSTRING      shift and go to state 26
+    NUMBER          shift and go to state 27
 
+    value                          shift and go to state 25
 
 state 24
 
-    (14) value -> NUMBER .
+    (12) decls -> decls SEP decl .
 
-    END_BLOCK       reduce using rule 14 (value -> NUMBER .)
-    SEP             reduce using rule 14 (value -> NUMBER .)
+    END_BLOCK       reduce using rule 12 (decls -> decls SEP decl .)
+    SEP             reduce using rule 12 (decls -> decls SEP decl .)
+
+
+state 25
+
+    (14) decl -> property ASSIGN value .
+
+    END_BLOCK       reduce using rule 14 (decl -> property ASSIGN value .)
+    SEP             reduce using rule 14 (decl -> property ASSIGN value .)
+
+
+state 26
+
+    (15) value -> NORMSTRING .
+
+    END_BLOCK       reduce using rule 15 (value -> NORMSTRING .)
+    SEP             reduce using rule 15 (value -> NORMSTRING .)
+
+
+state 27
+
+    (16) value -> NUMBER .
+
+    END_BLOCK       reduce using rule 16 (value -> NUMBER .)
+    SEP             reduce using rule 16 (value -> NUMBER .)
 

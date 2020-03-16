@@ -65,7 +65,12 @@ def set_font_size(el, val):
     font = el.GetFont()
     font.SetPointSize(val)
     el.SetFont(font)
-
+    
+def set_font_colour(el, val):
+    rgb = hex_to_rgb(val)
+    color = wx.Colour(*rgb) 
+    el.SetForegroundColour(color)
+    
 def hex_to_rgb(value):
     value = value.lstrip('#')
     lv = len(value)
@@ -86,5 +91,6 @@ def set_style_to_native(el, style):
         setter = el.SetBackgroundColour
         el.SetBackgroundColour = lambda val: set_background_color(setter, val)
     
+    el.SetFontColour = lambda val: set_font_colour(el, val)
     el.SetMargin = lambda val: set_margin(el, val)
     style.add(el)

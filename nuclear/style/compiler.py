@@ -6,10 +6,11 @@ from .helpers import is_class, is_tag
 import functools
 
 STYLE_FN ="""
-from nuclear.style.helpers import is_class, is_tag
+from nuclear.style.helpers import is_class, is_tag, is_state
 
 _it = is_tag
 _ic = is_class
+_st = is_state
 
 {rulesets}
 """
@@ -51,6 +52,9 @@ def c(ast_node):
 
     elif node_type == 'tag-selector':
         return "_it(\"{args}\", el)".format(args=args)
+    
+    elif node_type == 'state-selector':
+        return "_st(\"{args}\", el)".format(args=args)
     
     # Rule logic function building
     elif node_type == 'block':
