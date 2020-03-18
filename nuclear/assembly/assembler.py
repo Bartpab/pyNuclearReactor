@@ -5,6 +5,7 @@ import ast
 
 INIT_FILE = """# Automatically generated __init__ 
 from .methods       import methods
+from .watch         import watch
 from .computed      import computed
 from .data          import data
 from .template      import render
@@ -16,7 +17,8 @@ def rod():
         "data":     data(),
         "methods":  methods,
         "computed": computed,
-        "rods": rods
+        "watch":    watch,
+        "rods":     rods
     }
 """
 import re
@@ -30,6 +32,28 @@ def get(content, tag_name):
         val = match.groups()[0]
         
     return val
+
+def parse_watch(content):
+    regex = r"\{(.*?)\}[ ]*=>[ ]*\{(.*?)\}"
+
+    matches = re.finditer(regex, content, re.MULTILINE | re.DOTALL)
+    
+    watchers = []
+    
+    for matchNum, match in enumerate(matches, start=1):
+        watch_expr = match.groups()[0].strip()
+        logic_expr = match.groups()[1].strip()
+        
+        watch_fn = "lambda self: {}".format(watch_expr)
+        logic_fn = "lambda self, value, old_value: {}".format(logic_expr)
+        
+
+        watchers.append("({}, {})".format(watch_fn, logic_fn))
+        
+    return """
+from nuclear.reactivity.w_helpers import *
+watch=[{}]
+""".format(", ".join(watchers))
     
 def assemble(rod_file):
     base = os.path.basename(rod_file)
@@ -55,9 +79,15 @@ def assemble(rod_file):
     
     with open(os.path.join(dir, "methods.py"), "w") as f:
         f.write(methods_pycode)        
+
+    watch_pycode = parse_watch(
+        get(content, "watch")
+    ) 
     
+    with open(os.path.join(dir, "watch.py"), "w") as f:
+        f.write(watch_pycode) 
+      
     data_pycode = get(content, "data")
-    
     with open(os.path.join(dir, "data.py"), "w") as f:
         f.write(data_pycode)        
     
@@ -80,10 +110,9 @@ def assemble(rod_file):
         if isinstance(c, ast.Assign):
             rods_names.append(c.targets[0].id)
     rods_pycode += "\nrods = {" + ", ".join(['"{key}": {key}'.format(key=m) for m in rods_names]) + "}"
+    
     with open(os.path.join(dir, "rods.py"), "w") as f:
         f.write(rods_pycode)             
-
-    
     
     tpl = get(content, "template") 
     tpl_pycode = compile(tpl)

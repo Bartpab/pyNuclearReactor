@@ -25,10 +25,12 @@ class Dep:
         self.kw = kw
     
     def sub(self, sub):
-        self.subs.append(sub)
+        if sub not in self.subs:
+            self.subs.append(sub)
     
     def unsub(self, sub):
-        self.subs.remove(sub)
+        if sub in self.subs:
+            self.subs.remove(sub)
     
     def depend(self):
         if Dep.current_target():

@@ -85,6 +85,20 @@ class VNode:
     
     def destroy_el(self):
         raise NotImplementedError()
+    
+    def get_assembly_children(self):
+        """
+            Return first order assembly from this vnode
+        """
+        s = [self]
+        children = []
+        while s:
+            e = s.pop()
+            if isinstance(e, AssemblyVNode):
+                children.append(e.component_instance)
+            else:
+                s.extend(e.children)
+        return children
         
 class AssemblyVNode(VNode):
     def __init__(self, tag, component_instance, data, children, events):
@@ -95,11 +109,15 @@ class AssemblyVNode(VNode):
         self.component_instance.root = self.get_parent_el()
         self.component_instance.mount()
     
-    def patch_from(self, other, el_contexts, recreate): 
-        self.component_instance.destroy()
-        self.component_instance = other.component_instance
-        self.component_instance.root = self.get_parent_el()
-        self.component_instance.mount()   
+    def patch_from(self, other, el_contexts, recreate):
+        if recreate:
+            self.component_instance.destroy()
+            self.component_instance = other.component_instance
+            self.component_instance.root = self.get_parent_el()
+            self.component_instance.mount()   
+        else:
+            self.component_instance.patch_from(other.component_instance)  
+            self.component_instance.patch()
 
     def get_el(self):
         return self.parent_el

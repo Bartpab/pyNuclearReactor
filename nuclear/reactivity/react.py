@@ -9,7 +9,7 @@ class ComputedProperty:
         self.obj = obj
         
         self.dep = Dep(**kw)
-        self.watcher = Watcher(obj, lambda d: self.compute(d))
+        self.watcher = Watcher(obj, lambda d: self.compute(d), options={"flags": ["computed_watcher"]})
         self.init = True
         
     def compute(self, data):

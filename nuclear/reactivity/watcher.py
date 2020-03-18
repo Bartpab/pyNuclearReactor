@@ -43,6 +43,7 @@ class Watcher(BaseWatcher):
         self.cb = cb
         
         self.value = None
+        self.options = options if options else {}
        
     def add_dep(self, dep):
         dep_id = dep.id
@@ -56,7 +57,6 @@ class Watcher(BaseWatcher):
                 self.deps.append(dep)
                 dep.sub(self)
 
-    
     def cleanup_deps(self):
         for dep in self.deps:
             if not dep.id in self.new_deps_ids:
@@ -77,6 +77,9 @@ class Watcher(BaseWatcher):
             self.cb(value, old_value)        
     
     def update(self, **kw):
+        if "name" in self.options and "src" in kw and "key" in kw:
+            print("Update {} because of {}.{}".format(self.options["name"], str(kw["src"]), kw["key"]))
+        
         Watcher.add(self)
     
     def destroy(self):

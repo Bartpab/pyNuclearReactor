@@ -26,7 +26,7 @@ def compute_children_diff(old_ch, new_ch):
     
 def update_children(old, new, el_contexts):
     from .vnode import patch
-    
+
     old_ch = old.children
     new_ch = new.children
     
