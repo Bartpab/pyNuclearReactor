@@ -1,7 +1,10 @@
 from .native import set_data_to_native, set_events_to_native, set_nesting_properties, set_style_to_native
+from .native import update_nesting_properties, updata_data_to_native
+
 from .el_helpers import entering_el, leaving_el
 from .children_helpers import update_children
 from ..style import StyleEngine
+from ..log import log
 
 class VNode:
     @staticmethod
@@ -19,8 +22,10 @@ class VNode:
         self.data = data
         self.set_children(children)
         self.events = events
-        self.id = None
+        self.id = 0
         self.key = None if "key" not in data else data["key"]
+        
+        self.natural_id = 0
     
     def get(self, key):
         s = [self]
@@ -56,7 +61,7 @@ class VNode:
     def create_el(self, el_contexts):
         raise NotImplementedError()
     
-    def patch_from(self, other, el_contexts):
+    def patch_el(self, other, el_contexts):
         raise NotImplementedError()
     
     def get_parent_el(self, raise_if_none=False):
@@ -99,6 +104,12 @@ class VNode:
             else:
                 s.extend(e.children)
         return children
+
+    def update(self):
+        for c in self.children:
+            c.update()
+
+        self.update_el()
         
 class AssemblyVNode(VNode):
     def __init__(self, tag, component_instance, data, children, events):
@@ -109,15 +120,14 @@ class AssemblyVNode(VNode):
         self.component_instance.root = self.get_parent_el()
         self.component_instance.mount()
     
-    def patch_from(self, other, el_contexts, recreate):
-        if recreate:
-            self.component_instance.destroy()
-            self.component_instance = other.component_instance
-            self.component_instance.root = self.get_parent_el()
-            self.component_instance.mount()   
-        else:
-            self.component_instance.patch_from(other.component_instance)  
-            self.component_instance.patch()
+    def update_el(self):
+        if self.component_instance.node:
+            self.component_instance.node.update()
+            
+    def patch_el(self, other, el_contexts, recreate): 
+        from .assembly import patch_assembly
+        patch_assembly(self.component_instance, other.component_instance)
+        self.update()
 
     def get_el(self):
         return self.parent_el
@@ -130,6 +140,10 @@ class NativeVNode(VNode):
     def __init__(self, tag, el_factory, data, children, events):
         VNode.__init__(self, tag, data, children, events)
         self.el_factory = el_factory
+    
+    def update_el(self):
+        if self.el:
+            self.el.Layout()
     
     def get_el(self):
         return self.el
@@ -148,7 +162,7 @@ class NativeVNode(VNode):
             raise Exception("Cannot create el from vnode {}, because {} <Stack={}>.".format(self.tag, str(e), el_contexts["stack"]))
         
         try:
-            set_nesting_properties(self.data, self.el, el_contexts)
+            set_nesting_properties(self.id, self.data, self.el, el_contexts)
             set_style_to_native(self.el, StyleEngine)
             set_data_to_native(self.el, self.data)
             set_events_to_native(self.el, self.events)
@@ -160,27 +174,28 @@ class NativeVNode(VNode):
         entering_el(self.el, el_contexts) # Entering node
         
         for c in self.children:
-            c.create_el(el_contexts)
+            create_el(c, c.get_parent_el(), el_contexts)
         
         leaving_el(self.el, el_contexts) # Leaving node
-        
-        
-    def patch_from(self, other, el_contexts, recreate = False):
+
+    def patch_el(self, other, el_contexts, recreate = False):
         self.data   = {**other.data}
         self.events = {**other.events}
-        
+
         if recreate:
             self.destroy_el()
             self.el_factory = other.el_factory
-            self.create_el(el_contexts)
+            create_el(self, self.get_parent_el(), el_contexts)
         else:
-            set_nesting_properties(self.data, self.el, el_contexts)
-            set_data_to_native(self.el, self.data)
+            update_nesting_properties(self.id, self.data, self.el, el_contexts)
+            updata_data_to_native(self.el, self.data)
             set_events_to_native(self.el, self.events)  
             
             entering_el(self.el, el_contexts) # Entering node
             update_children(self, other, el_contexts)
             leaving_el(self.el, el_contexts) # Leaving node
+        
+        self.update_el()
         
 def create_el_contexts(vnode):
     p_el = vnode.get_parent_el()
@@ -192,22 +207,18 @@ def create_el_contexts(vnode):
     
     if p_el.GetSizer():
         c["sizers"].append(p_el.GetSizer())
-    
+
     return c
     
-def create_el(vnode, parent_el = None, el_contexts = None):
-    if not parent_el and not vnode.parent:
-        raise Exception("Cannot create element as no root was defined (either virtual or real ones)")
-    
-    if not vnode.parent:
-        vnode.parent_el = parent_el
+def create_el(vnode, parent_el, el_contexts = None):
+    vnode.parent_el = parent_el
     
     if not el_contexts:
         el_contexts = create_el_contexts(vnode)
     
     return vnode.create_el(el_contexts)
 
-def patch(old, new, el_contexts=None, order_changed=False):
+def patch_el(old, new, el_contexts=None, order_changed=False):
     """
         Patch the vnode and apply it to the real one
     """
@@ -215,10 +226,11 @@ def patch(old, new, el_contexts=None, order_changed=False):
         el_contexts = create_el_contexts(old)
 
     if old.same(new):
-        old.patch_from(new, el_contexts, order_changed)
+        old.patch_el(new, el_contexts, order_changed)
         return old
+    
     else:   
         old.transfer(new)
         old.destroy_el()
-        new.create_el(el_contexts)
+        create_el(new, new.get_parent_el(), el_contexts)
         return new

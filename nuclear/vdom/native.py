@@ -16,7 +16,23 @@ def create_native_node(tag, data, children, events=None):
         return VNode.new_native(tag, getattr(wx, cTag), data, children, events)
     else:       
         raise Exception(cTag)
-
+def updata_data_to_native(el, data):
+    for key, value in data.items():
+        if key == "class":
+            setattr(el, "style_class", value)
+            continue
+        
+        if key == "key":
+            setattr(el, "key", value)
+            continue
+            
+        if key in ("sopt", "key", "class", "sizer"):
+            continue
+        
+        wMethName = "Set" + key[0].upper() + key[1:]
+        wMeth = getattr(el, wMethName)
+        wMeth(value)
+        
 def set_data_to_native(el, data):
     for key, value in data.items():
         if key == "class":
@@ -49,7 +65,19 @@ def set_events_to_native(el, events):
         else:
             el.Bind(k, v)    
 
-def set_nesting_properties(data, el, el_contexts):
+def update_nesting_properties(id, data, el, el_contexts):
+    if el_contexts["sizers"]:
+        kw = data["sopt"] if "sopt" in data else {}
+        szr = el_contexts["sizers"][-1]
+        
+        for c in szr.GetChildren():
+            if c.GetWindow() == el: 
+                return
+        
+        if isinstance(el, wx.Window):
+            el.szr_ctrl = el_contexts["sizers"][-1].Add(el, **kw) 
+           
+def set_nesting_properties(id, data, el, el_contexts):
     if el_contexts["sizers"]:
         kw = data["sopt"] if "sopt" in data else {}
         szr = el_contexts["sizers"][-1]

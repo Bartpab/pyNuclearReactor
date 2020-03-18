@@ -25,7 +25,7 @@ def compute_children_diff(old_ch, new_ch):
     return to_patch, to_add, to_remove
     
 def update_children(old, new, el_contexts):
-    from .vnode import patch
+    from .vnode import patch_el, create_el
 
     old_ch = old.children
     new_ch = new.children
@@ -36,6 +36,7 @@ def update_children(old, new, el_contexts):
         to_r.destroy()
     
     nodes = []
+    
     for ai, a in to_add:
         nodes.append((ai, "add", (a,)))
     
@@ -44,11 +45,15 @@ def update_children(old, new, el_contexts):
         
     nodes = sorted(nodes, key=lambda e: e[0])
     
+    # Reset the position of the children
+    old.children = []
+    
     for i, instr, args in nodes:
         if instr == "add":
             c = args[0]
             c.set_parent(old)
-            c.create_el(el_contexts)            
+            create_el(c, c.get_parent_el(), el_contexts)          
         else:
             co, cn, oi = args
-            patch(co, cn, el_contexts, oi != i)
+            co.set_parent(old)
+            patch_el(co, cn, el_contexts, oi != i)

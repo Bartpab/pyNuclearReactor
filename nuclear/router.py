@@ -1,7 +1,7 @@
 from .base import BaseReactor
 
 from .vdom.factory import create_vnode
-from .vdom.vnode   import create_el, patch
+from .vdom.vnode   import create_el, patch_el
 
 class RouterAssembly(BaseReactor):
     def __init__(self, router, props, events, globals, root, name):
@@ -53,7 +53,7 @@ class RouterAssembly(BaseReactor):
             create_el(self.node, parent_el=self.root)
         
         else:
-            self.node = patch(self.node, new_node)
+            self.node = patch_el(self.node, new_node)
         
         self.root.Layout()
         return self.node   

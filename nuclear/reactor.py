@@ -1,30 +1,8 @@
 import functools
 
 from .base       import BaseReactor
-from .reactivity import observe, Watcher, defineComputed, defineReactive
-
-from .style        import StyleEngine
-from .vdom.factory import create_vnode
-from .vdom.vnode   import create_el, patch
-
-def dict2obj(**kw):
-    obj = type("DataEntry", (), {})() 
-    
-    for k, v in kw.items():
-        setattr(obj, k, v)
-    
-    return obj
-
-def objectify(o):
-    if type(o) is dict:
-        for k, v in o.items():
-            o[k] = objectify(v)
-    
-        return dict2obj(**o)
-    
-    return o
-
-from copy import copy
+from .reactivity import Watcher
+from .style      import StyleEngine
 
 class ReactorAssembly(BaseReactor):
     def __init__(self, props, events, template, data, methods, computed, watch, rods, globals, root, name):

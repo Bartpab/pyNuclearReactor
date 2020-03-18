@@ -1,4 +1,5 @@
 from .dep import Dep
+from ..log import log
 
 class BaseWatcher:
     def __init__(self):
@@ -77,9 +78,7 @@ class Watcher(BaseWatcher):
             self.cb(value, old_value)        
     
     def update(self, **kw):
-        if "name" in self.options and "src" in kw and "key" in kw:
-            print("Update {} because of {}.{}".format(self.options["name"], str(kw["src"]), kw["key"]))
-        
+        log.watcher_update(self, kw)        
         Watcher.add(self)
     
     def destroy(self):

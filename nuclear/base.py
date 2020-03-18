@@ -2,10 +2,13 @@ import functools
 
 from .reactivity import observe, Watcher, defineComputed, defineReactive
 from .vdom.factory import create_vnode
-from .vdom.vnode   import create_el, patch
+from .vdom.vnode   import create_el, patch_el
+from .log          import log
 
 class BaseReactor:
     def __init__(self, template, data, computed, methods, watch, rods, globals, root, name=None):
+        self._name = name if name else "_"
+        
         observe(self)
         
         self.data       = {}
@@ -23,7 +26,10 @@ class BaseReactor:
         self.w = Watcher(
             self, 
             lambda data: self.render(), 
-            options={"flags": ["assembly_watcher"], "name": "__root__" if not name else name}
+            options={
+                "flags": ["assembly_watcher"], 
+                "name": self.get_name()
+            }
         )
         
         self.template = template
@@ -36,8 +42,8 @@ class BaseReactor:
         self._destroyed = False
         self._mounted = False
     
-    def patch(self):
-        self.w.run()
+    def get_name(self):
+        return self._name
     
     def render(self): 
         """
@@ -49,18 +55,19 @@ class BaseReactor:
         if not self.root:
             return
             
-        tpl = self.template
-        
         # Call the render function
-        new_node = tpl(create_vnode, self)
+        new_node = self.template(create_vnode, self)
         
         if self.node is None:
             self.node = new_node
             create_el(self.node, parent_el=self.root)
+
         else:
-            self.node = patch(self.node, new_node)
+            self.node = patch_el(self.node, new_node)
         
         self.root.Layout()
+        self.root.Refresh(eraseBackground=False)
+        
         return self.node   
     
     def bind_methods(self, methods):
@@ -79,6 +86,8 @@ class BaseReactor:
             self.events[ev_name].append(callback)
     
     def emit(self, event, args):
+        log.assembly_event_emitted(self, event, args)
+        
         if event in self.events:
             [c(args) for c in self.events[event]]
     
@@ -174,25 +183,11 @@ class BaseReactor:
         if self.node:
             self.node.destroy_el()
             self.node = None
-        
-        try:
-            self.destroyed()
-        finally:
-            pass
+            
+        self.destroyed()
      
     def get_assembly_children(self):
         if self.node:
             return self.node.get_assembly_children()
         
         return []
-     
-    def patch_from(self, other):
-        print("Patching \"%s\"" % self.name)
-
-        for k, v in other.props.items():
-            setattr(self, k, getattr(other, k))
-        
-        for w in self.watchers:
-            w.run()
-            
-        self.patched()
