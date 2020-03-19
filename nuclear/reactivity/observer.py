@@ -2,6 +2,7 @@ from .dep import Dep
 from .react import defineReactive
 import inspect
 import sqlalchemy
+import types
 
 class Observer:
     def __init__(self, value, restrain=None):
@@ -26,6 +27,8 @@ class Observer:
         attrs = {**obj.__dict__}.items()
         # attrs = inspect.getmembers(obj)
         for key, value in attrs:  
+            if type(value) in (types.FunctionType, types.MethodType):
+                continue
             if key.startswith("_"):
                 continue
             if (key.startswith("__") and key.endswith("__")) or key in ("__nuclear_props",):

@@ -5,15 +5,15 @@ from .reactivity import Watcher
 from .style      import StyleEngine
 
 class ReactorAssembly(BaseReactor):
-    def __init__(self, props, events, template, data, methods, computed, watch, rods, globals, root, name):
+    def __init__(self, id, props, events, template, data, methods, computed, watch, rods, globals, root, name):
         self.props = {**props}
         self.data = {**data}
 
         data_and_props = {**data}
         data_and_props.update(props)
-        self.name = name
 
         BaseReactor.__init__(self, 
+            id=id,
             template=template, 
             data=data_and_props, 
             computed=computed, 
@@ -29,7 +29,7 @@ class ReactorAssembly(BaseReactor):
         self.bind_events(events)
     
     def __str__(self):
-        return "ReactorAssembly::{}".format(self.name)
+        return "ReactorAssembly::{}".format(self.get_id())
     
     def next_tick(self, dt):
         self.process_events()
@@ -42,11 +42,12 @@ class Reactor(BaseReactor):
         value = objectify(value)
         setattr(self, key, value)
 
-    def __init__(self, template, data, methods, computed, watch, rods, root, globals=None):
+    def __init__(self, id, template, data, methods, computed, watch, rods, root, globals=None):
         if not globals:
             globals = {}
 
         BaseReactor.__init__(self, 
+            id=id,
             template=template, 
             data=data, 
             computed=computed, 
@@ -55,7 +56,10 @@ class Reactor(BaseReactor):
             rods=rods, 
             globals=globals, 
             root=root)
-
+    
+    def __str__(self):
+        return "Reactor::{}".format(self.get_id())
+        
     def next_tick(self, dt):
         Watcher.run_all()
         StyleEngine.run_all()

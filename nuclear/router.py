@@ -6,6 +6,7 @@ from .vdom.vnode   import create_el, patch_el
 class RouterAssembly(BaseReactor):
     def __init__(self, router, props, events, globals, root, name):
         BaseReactor.__init__(self, 
+            id="Router",
             template=None, 
             data={}, 
             computed={}, 

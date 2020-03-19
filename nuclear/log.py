@@ -6,27 +6,39 @@ class Log:
         print("[NuclearReactor] " + msg)
     
     def create_assembly(self, assembly, props, events):
-        self.log("[CREATE] Creating {}, props={}".format(
-            assembly.name,
+        self.log("[CREATE] {}, props={}".format(
+            str(assembly),
             str(props)
         ))
     
+    def assembly_render(self, assembly):
+        self.log("[RENDER] {}".format(
+            str(assembly)
+        ))        
+    
     def assembly_patch(self, assembly, new_assembly):
-        self.log("[PATCH] Patching {}|{}, props={}".format(
-            assembly.name,
-            new_assembly.name,
+        self.log("[PATCH] {}, props={}".format(
+            str(assembly),
             new_assembly.props
         ))
     
     def assembly_event_emitted(self, assembly, event_name, args):
-        self.log("[EVENT] Event {} emitted from {}, args={}".format(
+        self.log("[EVENT] \"{}\" from {}, args={}".format(
             event_name,
             str(assembly),
             str(args)
         ))
     
-    def watcher_update(self, watcher, kw):
+    def assembly_data_props_changed(self, assembly, key, value):
+        self.log("[DATA] {} {} => {}".format(str(assembly), key, value))
+    
+    def watcher_update(self, watcher, kw, already_scheduled=False):
         if "name" in watcher.options and "src" in kw and "key" in kw:
-            self.log("[UPDATE] Update {} because of {}.{}".format(watcher.options["name"], str(kw["src"]), kw["key"]))
+            self.log("[{}] {} reason={}.{}".format(
+                "UPDATE" if not already_scheduled else "UPDATE BIS",
+                watcher.options["name"], 
+                str(kw["src"]), 
+                kw["key"])
+            )
             
 log = Log()

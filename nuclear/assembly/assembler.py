@@ -12,16 +12,21 @@ from .template      import render
 from .rods          import rods
 
 def rod():
-    return {
+    return {{
+        "id":       "{id}",
         "template": render,
         "data":     data(),
         "methods":  methods,
         "computed": computed,
         "watch":    watch,
         "rods":     rods
-    }
+    }}
 """
 import re
+import autopep8
+
+def format(pycode):
+    return autopep8.fix_code(pycode, options={'aggressive': 2})
 
 def get(content, tag_name):
     val = ""
@@ -59,6 +64,8 @@ def assemble(rod_file):
     base = os.path.basename(rod_file)
     dir = ".".join(rod_file.split(".")[0:-1])
     
+    id = dir.replace("/", "::").replace("\\", "::")
+    
     content = ""
     with open(rod_file, "r") as f:
         content = f.read()
@@ -67,7 +74,7 @@ def assemble(rod_file):
         os.makedirs(dir)
     
     with open(os.path.join(dir, "__init__.py"), "w") as f:
-        f.write(INIT_FILE)
+        f.write(format(INIT_FILE.format(id=id)))
     
     methods_pycode = get(content, "methods")    
     method_names = []
@@ -78,18 +85,18 @@ def assemble(rod_file):
     methods_pycode += "\nmethods = {" + ", ".join(['"{key}": {key}'.format(key=m) for m in method_names]) + "}"
     
     with open(os.path.join(dir, "methods.py"), "w") as f:
-        f.write(methods_pycode)        
+        f.write(format(methods_pycode))
 
     watch_pycode = parse_watch(
         get(content, "watch")
     ) 
     
     with open(os.path.join(dir, "watch.py"), "w") as f:
-        f.write(watch_pycode) 
+        f.write(format(watch_pycode)) 
       
     data_pycode = get(content, "data")
     with open(os.path.join(dir, "data.py"), "w") as f:
-        f.write(data_pycode)        
+        f.write(format(data_pycode))    
     
 
     computed_pycode = get(content, "computed") 
@@ -112,10 +119,10 @@ def assemble(rod_file):
     rods_pycode += "\nrods = {" + ", ".join(['"{key}": {key}'.format(key=m) for m in rods_names]) + "}"
     
     with open(os.path.join(dir, "rods.py"), "w") as f:
-        f.write(rods_pycode)             
+        f.write(format(rods_pycode))             
     
     tpl = get(content, "template") 
-    tpl_pycode = compile(tpl)
+    tpl_pycode = "import functools\n{}".format(compile(tpl))
     
     with open(os.path.join(dir, "template.py"), "w") as f:
-        f.write(tpl_pycode)  
+        f.write(format(tpl_pycode))

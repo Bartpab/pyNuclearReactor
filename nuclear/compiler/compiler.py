@@ -124,13 +124,13 @@ def c(ast_node, symbol_table, event_methods):
             if v:
                 locals.append(k)
         
-        args = ["e", *locals]
+        args = ["self", "e", *locals]
         
         push_scope('e', [], symbol_table)
         event_methods.append(EV_TPL.format(id=i, args=", ".join(args), expr=_c(expr)))
         pop_scope('e', symbol_table)
         
-        fn_id = "lambda e: ev_{id}({args})".format(id=i, args=", ".join(args))
+        fn_id = "functools.partial(ev_{id}, self)".format(id=i, args=", ".join(args))
         
         return "\"{key}\" : {value}".format(
             key=name,

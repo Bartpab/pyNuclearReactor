@@ -78,7 +78,7 @@ class Watcher(BaseWatcher):
             self.cb(value, old_value)        
     
     def update(self, **kw):
-        log.watcher_update(self, kw)        
+        log.watcher_update(self, kw, self in Watcher.__queue__)       
         Watcher.add(self)
     
     def destroy(self):

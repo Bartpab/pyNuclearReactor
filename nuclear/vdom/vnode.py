@@ -142,7 +142,7 @@ class NativeVNode(VNode):
         self.el_factory = el_factory
     
     def update_el(self):
-        if self.el:
+        if self.el and hasattr(self.el, "Layout"):
             self.el.Layout()
     
     def get_el(self):

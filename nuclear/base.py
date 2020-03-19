@@ -6,8 +6,9 @@ from .vdom.vnode   import create_el, patch_el
 from .log          import log
 
 class BaseReactor:
-    def __init__(self, template, data, computed, methods, watch, rods, globals, root, name=None):
+    def __init__(self, id, template, data, computed, methods, watch, rods, globals, root, name=None):
         self._name = name if name else "_"
+        self._id = id
         
         observe(self)
         
@@ -28,7 +29,7 @@ class BaseReactor:
             lambda data: self.render(), 
             options={
                 "flags": ["assembly_watcher"], 
-                "name": self.get_name()
+                "name": str(self)
             }
         )
         
@@ -42,8 +43,20 @@ class BaseReactor:
         self._destroyed = False
         self._mounted = False
     
+    def __setattr__(self, key, value):
+        object.__setattr__(self, key, value)
+        
+        if hasattr(self, "data") and key in self.data:
+            log.assembly_data_props_changed(self, key, value)
+        
+        elif hasattr(self, "props") and key in self.props:
+            log.assembly_data_props_changed(self, key, value)
+            
     def get_name(self):
         return self._name
+    
+    def get_id(self):
+        return self._id
     
     def render(self): 
         """
@@ -55,6 +68,7 @@ class BaseReactor:
         if not self.root:
             return
             
+        log.assembly_render(self)
         # Call the render function
         new_node = self.template(create_vnode, self)
         
@@ -137,7 +151,6 @@ class BaseReactor:
             w.run()
         
         self._mounted = True
-        
         self.mounted()
     
     def rod(self, key):

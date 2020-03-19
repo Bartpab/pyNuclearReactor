@@ -25,7 +25,14 @@ class MutantProperty:
         
         if prop is None:
             def fbase_getter(self, obj):
-                return self.value
+                if hasattr(obj, "__%s" % name):
+                    return getattr(obj, "__%s" % name)
+                
+                if hasattr(obj.__class__, name):
+                    return getattr(obj.__class__, name)
+                
+                print(obj, name)
+                raise AttributeError()
             
             base_getter = functools.partial(fbase_getter, self, obj)
         
@@ -47,11 +54,17 @@ class MutantProperty:
         
         if prop is None:
             def fbase_getter(self, obj):
-                return self.value 
+                if hasattr(obj, "__%s" % name):
+                    return getattr(obj, "__%s" % name)
+                
+                if hasattr(obj.__class__, name):
+                    return getattr(obj.__class__, name)
+                
+                raise AttributeError()
             
             def fbase_setter(self, obj, value):
-                self.value = value
-            
+                return setattr(obj, "__%s" % name, value)
+                
             base_getter = functools.partial(fbase_getter, self, obj)
             base_setter = functools.partial(fbase_setter, self, obj)
         else:
